@@ -31,6 +31,18 @@ async function main() {
     },
   });
 
+  await prisma.user.upsert({
+    where: { email: "shamos@korvio.com" },
+    update: {},
+    create: {
+      fullName: "Korvio Platform Admin",
+      email: "shamos@korvio.com",
+      phoneNumber: "256700000102",
+      passwordHash,
+      accountType: "ADMIN",
+    },
+  });
+
   await prisma.campaign.deleteMany({ where: { campaignCode: "MSW-2026" } });
 
   const campaign = await prisma.campaign.create({
@@ -149,7 +161,8 @@ async function main() {
   if (any) await recalculateContributorAndCampaign(any.id);
 
   console.log("Seeded Korvio demo data");
-  console.log("Login: moses@korvio.app / korvio123");
+  console.log("Organiser login: moses@korvio.app / korvio123");
+  console.log("Platform admin login: shamos@korvio.com / korvio123");
   console.log("Campaign code: MSW-2026");
 }
 

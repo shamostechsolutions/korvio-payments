@@ -24,7 +24,7 @@ export function AdminSidebar({ userName }: { userName?: string }) {
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login?redirect=/admininterface");
+    router.push("/admininterface/login");
     router.refresh();
   }
 

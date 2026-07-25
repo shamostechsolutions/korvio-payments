@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth/session";
+import { isPlatformAdmin } from "@/lib/auth/platform-admin";
 
 export async function GET() {
   const user = await getSessionUser();
@@ -11,6 +12,7 @@ export async function GET() {
       email: user.email,
       phoneNumber: user.phoneNumber,
       accountType: user.accountType,
+      isPlatformAdmin: isPlatformAdmin(user),
     },
   });
 }

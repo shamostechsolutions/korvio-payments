@@ -4,7 +4,12 @@ import { getSessionUser } from "@/lib/auth/session";
 export function getPlatformAdminEmails(): string[] {
   return (process.env.PLATFORM_ADMIN_EMAILS ?? "")
     .split(",")
-    .map((email) => email.trim().toLowerCase())
+    .map((email) =>
+      email
+        .trim()
+        .toLowerCase()
+        .replace(/^["']|["']$/g, ""),
+    )
     .filter(Boolean);
 }
 

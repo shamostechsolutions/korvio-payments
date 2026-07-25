@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   CreditCard,
   Globe,
   LayoutDashboard,
   LogOut,
   Plus,
+  Shield,
   Users,
   Wallet,
 } from "lucide-react";
@@ -33,6 +35,15 @@ export function DashboardSidebar({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
+
+  useEffect(() => {
+    void fetch("/api/auth/me")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.user?.isPlatformAdmin) setIsPlatformAdmin(true);
+      });
+  }, []);
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -65,6 +76,18 @@ export function DashboardSidebar({
             <Plus className="h-4 w-4 shrink-0" />
             New campaign
           </Link>
+          {isPlatformAdmin ? (
+            <Link
+              href="/admininterface"
+              className={cn(
+                "dash-nav-item mt-2 border border-teal-500/20",
+                pathname.startsWith("/admininterface") && "active",
+              )}
+            >
+              <Shield className="h-4 w-4 shrink-0" />
+              Platform admin
+            </Link>
+          ) : null}
         </nav>
 
         {campaignId ? (

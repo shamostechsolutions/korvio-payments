@@ -39,10 +39,10 @@ function LoginForm() {
     <div className="surface w-full max-w-md rounded-3xl p-8">
       <Logo />
       <h1 className="mt-6 font-[family-name:var(--font-display)] text-3xl font-700 text-[var(--brand)]">
-        Welcome back
+        Organiser sign in
       </h1>
       <p className="mt-2 text-sm text-[var(--ink-soft)]">
-        Log in to manage campaigns, payments, and collections.
+        Log in to manage your campaigns, payments, and collections.
       </p>
       <form action={onSubmit} className="mt-6 space-y-4">
         <div>
@@ -59,9 +59,13 @@ function LoginForm() {
         </Button>
       </form>
       <p className="mt-4 text-sm text-[var(--ink-soft)]">
-        New to Korvio?{" "}
-        <Link href="/register" className="font-semibold text-[var(--brand)]">
-          Create an account
+        Campaign organiser?{" "}
+        <Link href="/login" className="font-semibold text-[var(--brand)]">
+          Organiser login
+        </Link>
+        {" · "}
+        <Link href="/admininterface/login" className="font-semibold text-[var(--brand-soft)]">
+          Admin login
         </Link>
       </p>
     </div>
