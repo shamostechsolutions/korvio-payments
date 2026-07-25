@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getSessionUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
+import { DashShell } from "@/components/dashboard/dash-shell";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
 import { DashStatCard } from "@/components/dashboard/dash-stat-card";
 import { isOpenFundraising } from "@/lib/campaigns/fundraising";
@@ -36,10 +37,12 @@ export default async function DashboardHomePage() {
   );
 
   return (
-    <div className="flex min-h-screen">
-      <DashboardSidebar userName={user.fullName} />
-      <main className="min-w-0 flex-1 overflow-auto p-4 md:p-6 lg:p-8">
-        <div className="space-y-6">
+    <DashShell
+      renderSidebar={({ onNavigate }) => (
+        <DashboardSidebar userName={user.fullName} onNavigate={onNavigate} />
+      )}
+    >
+      <div className="space-y-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold tracking-tight text-[var(--dash-ink)] md:text-3xl">
@@ -152,8 +155,7 @@ export default async function DashboardHomePage() {
               ))
             )}
           </section>
-        </div>
-      </main>
-    </div>
+      </div>
+    </DashShell>
   );
 }

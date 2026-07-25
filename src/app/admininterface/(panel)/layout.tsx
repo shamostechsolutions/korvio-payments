@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/session";
 import { isPlatformAdmin } from "@/lib/auth/platform-admin";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
+import { DashShell } from "@/components/dashboard/dash-shell";
 
 export default async function AdminPanelLayout({
   children,
@@ -48,9 +49,12 @@ export default async function AdminPanelLayout({
   }
 
   return (
-    <div className="dashboard-theme flex min-h-screen">
-      <AdminSidebar userName={user.fullName} />
-      <main className="min-w-0 flex-1 overflow-auto p-4 md:p-6 lg:p-8">{children}</main>
-    </div>
+    <DashShell
+      renderSidebar={({ onNavigate }) => (
+        <AdminSidebar userName={user.fullName} onNavigate={onNavigate} />
+      )}
+    >
+      {children}
+    </DashShell>
   );
 }

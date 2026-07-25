@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
+import { DashShell } from "@/components/dashboard/dash-shell";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
 import { DashPageHeader } from "@/components/dashboard/dash-page";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
@@ -83,10 +84,8 @@ export default function NewCampaignPage() {
   }
 
   return (
-    <div className="flex min-h-screen">
-      <DashboardSidebar />
-      <main className="min-w-0 flex-1 overflow-auto p-4 md:p-6 lg:p-8">
-        <div className="dash-card p-6 md:p-8">
+    <DashShell renderSidebar={({ onNavigate }) => <DashboardSidebar onNavigate={onNavigate} />}>
+      <div className="dash-card p-6 md:p-8">
         <DashPageHeader
           title="Create a campaign"
           description="Choose a fundraising goal or open contributions. Korvio generates a public page link you can share with your group."
@@ -275,8 +274,7 @@ export default function NewCampaignPage() {
             </button>
           </div>
         </form>
-        </div>
-      </main>
-    </div>
+      </div>
+    </DashShell>
   );
 }

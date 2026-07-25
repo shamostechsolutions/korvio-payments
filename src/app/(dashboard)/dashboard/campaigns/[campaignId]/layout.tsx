@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/session";
 import { getCampaignAccess } from "@/lib/campaigns/access";
+import { DashShell } from "@/components/dashboard/dash-shell";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
 
 export default async function CampaignLayout({
@@ -17,13 +18,17 @@ export default async function CampaignLayout({
   if (!access) notFound();
 
   return (
-    <div className="flex min-h-screen">
-      <DashboardSidebar
-        campaignId={access.campaign.id}
-        campaignName={access.campaign.name}
-        userName={user.fullName}
-      />
-      <main className="min-w-0 flex-1 overflow-auto p-4 md:p-6 lg:p-8">{children}</main>
-    </div>
+    <DashShell
+      renderSidebar={({ onNavigate }) => (
+        <DashboardSidebar
+          campaignId={access.campaign.id}
+          campaignName={access.campaign.name}
+          userName={user.fullName}
+          onNavigate={onNavigate}
+        />
+      )}
+    >
+      {children}
+    </DashShell>
   );
 }

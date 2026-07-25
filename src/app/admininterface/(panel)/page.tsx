@@ -79,7 +79,7 @@ export default async function AdminOverviewPage() {
             View all
           </Link>
         </div>
-        <div className="mt-4 overflow-x-auto">
+        <div className="mt-4 hidden overflow-x-auto md:block">
           <table className="w-full min-w-[640px] text-left text-sm">
             <thead>
               <tr className="border-b border-[var(--dash-border)] text-[var(--dash-muted)]">
@@ -135,6 +135,62 @@ export default async function AdminOverviewPage() {
             </tbody>
           </table>
         </div>
+
+        <ul className="mt-4 space-y-3 md:hidden">
+          {recentCampaigns.map((c) => (
+            <li
+              key={c.id}
+              className="rounded-xl border border-[var(--dash-border)] bg-[var(--dash-bg)] p-4"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                  {c.status === "ACTIVE" ? (
+                    <Link
+                      href={`/c/${c.campaignCode}`}
+                      target="_blank"
+                      className="font-medium text-[var(--dash-ink)] hover:text-teal-400"
+                    >
+                      {c.name}
+                    </Link>
+                  ) : (
+                    <span className="font-medium text-[var(--dash-ink)]">{c.name}</span>
+                  )}
+                  <p className="text-xs text-[var(--dash-muted)]">{c.campaignCode}</p>
+                </div>
+                <span
+                  className={
+                    c.status === "DRAFT"
+                      ? "rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-semibold text-amber-400"
+                      : "rounded-full bg-teal-500/10 px-2 py-0.5 text-xs font-semibold text-teal-400"
+                  }
+                >
+                  {c.status === "DRAFT" ? "Pending approval" : c.status}
+                </span>
+              </div>
+              <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <dt className="text-xs text-[var(--dash-muted)]">Organiser</dt>
+                  <dd className="mt-0.5 text-[var(--dash-ink)]">{c.owner.fullName}</dd>
+                  {c.owner.email ? (
+                    <dd className="text-xs text-[var(--dash-muted)]">{c.owner.email}</dd>
+                  ) : null}
+                </div>
+                <div>
+                  <dt className="text-xs text-[var(--dash-muted)]">Received</dt>
+                  <dd className="mt-0.5 font-semibold text-emerald-400">
+                    {formatMoney(c.totalReceived, c.currency)}
+                  </dd>
+                </div>
+                <div className="col-span-2">
+                  <dt className="text-xs text-[var(--dash-muted)]">Created</dt>
+                  <dd className="mt-0.5 text-[var(--dash-muted)]">
+                    {format(c.createdAt, "MMM d, yyyy")}
+                  </dd>
+                </div>
+              </dl>
+            </li>
+          ))}
+        </ul>
       </section>
     </div>
   );

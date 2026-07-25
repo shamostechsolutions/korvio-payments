@@ -24,7 +24,7 @@ export default async function AdminCashoutsPage() {
         </p>
       </div>
 
-      <section className="dash-card overflow-x-auto p-5">
+      <section className="dash-card hidden overflow-x-auto p-5 md:block">
         <table className="w-full min-w-[960px] text-left text-sm">
           <thead>
             <tr className="border-b border-[var(--dash-border)] text-[var(--dash-muted)]">
@@ -100,6 +100,77 @@ export default async function AdminCashoutsPage() {
             )}
           </tbody>
         </table>
+      </section>
+
+      <section className="space-y-3 md:hidden">
+        {cashouts.length === 0 ? (
+          <div className="dash-card p-8 text-center text-[var(--dash-muted)]">
+            No cash-out requests yet.
+          </div>
+        ) : (
+          cashouts.map((c) => (
+            <article key={c.id} className="dash-card space-y-3 p-4">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                  <Link
+                    href={`/c/${c.campaign.campaignCode}`}
+                    target="_blank"
+                    className="font-medium text-[var(--dash-ink)] hover:text-teal-400"
+                  >
+                    {c.campaign.name}
+                  </Link>
+                  <p className="text-xs text-[var(--dash-muted)]">{c.campaign.campaignCode}</p>
+                </div>
+                <span
+                  className={
+                    c.status === "COMPLETED"
+                      ? "rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-400"
+                      : c.status === "PENDING"
+                        ? "rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-semibold text-amber-400"
+                        : "rounded-full bg-teal-500/10 px-2 py-0.5 text-xs font-semibold text-teal-400"
+                  }
+                >
+                  {c.status}
+                </span>
+              </div>
+
+              <dl className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <dt className="text-xs text-[var(--dash-muted)]">Requested by</dt>
+                  <dd className="mt-0.5 font-medium text-[var(--dash-ink)]">{c.requestedBy.fullName}</dd>
+                  <dd className="text-xs text-[var(--dash-muted)]">{c.requestedBy.phoneNumber}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-[var(--dash-muted)]">Payout</dt>
+                  <dd className="mt-0.5 font-medium text-[var(--dash-ink)]">{c.payoutPhone}</dd>
+                  <dd className="text-xs text-[var(--dash-muted)]">
+                    {c.payoutMethod.replaceAll("_", " ")}
+                  </dd>
+                </div>
+                <div className="col-span-2">
+                  <dt className="text-xs text-[var(--dash-muted)]">Net amount</dt>
+                  <dd className="mt-0.5 font-semibold text-emerald-400">
+                    {formatMoney(c.netAmount, c.campaign.currency)}
+                  </dd>
+                  <dd className="text-xs text-[var(--dash-muted)]">
+                    Gross {formatMoney(c.amount, c.campaign.currency)} · fee{" "}
+                    {formatMoney(c.platformFee, c.campaign.currency)}
+                  </dd>
+                </div>
+                <div className="col-span-2">
+                  <dt className="text-xs text-[var(--dash-muted)]">Requested</dt>
+                  <dd className="mt-0.5 text-[var(--dash-muted)]">
+                    {format(c.requestedAt, "MMM d, yyyy · h:mm a")}
+                  </dd>
+                </div>
+              </dl>
+
+              <div className="border-t border-[var(--dash-border)] pt-3">
+                <CashoutActions cashoutId={c.id} status={c.status} />
+              </div>
+            </article>
+          ))
+        )}
       </section>
     </div>
   );

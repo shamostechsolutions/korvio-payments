@@ -1,8 +1,34 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
 import { useState } from "react";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
+
+type PendingAction = "approve" | "delete";
+
+const actionConfig: Record<
+  PendingAction,
+  {
+    title: string;
+    description: string;
+    confirmLabel: string;
+    variant: "default" | "danger";
+  }
+> = {
+  approve: {
+    title: "Approve campaign?",
+    description: "This campaign will go live on the public page and can start accepting contributions.",
+    confirmLabel: "Approve & go live",
+    variant: "default",
+  },
+  delete: {
+    title: "Delete campaign?",
+    description:
+      "This campaign will be removed from the public site and organiser dashboard. This action cannot be undone.",
+    confirmLabel: "Delete",
+    variant: "danger",
+  },
+};
 
 export function CampaignAdminActions({
   campaignId,
@@ -12,7 +38,8 @@ export function CampaignAdminActions({
   status: string;
 }) {
   const router = useRouter();
-  const [loading, setLoading] = useState<"approve" | "delete" | null>(null);
+  const [loading, setLoading] = useState<PendingAction | null>(null);
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const [error, setError] = useState("");
 
   async function patch(body: { status: string }) {
@@ -25,39 +52,25 @@ export function CampaignAdminActions({
     if (!res.ok) throw new Error(data.error || "Action failed");
   }
 
-  async function approve() {
-    if (!confirm("Approve this campaign and make it live on the public page?")) return;
-    setLoading("approve");
-    setError("");
-    try {
-      await patch({ status: "ACTIVE" });
-      router.refresh();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to approve");
-    } finally {
-      setLoading(null);
-    }
-  }
+  async function handleConfirm() {
+    if (!pendingAction) return;
 
-  async function remove() {
-    if (
-      !confirm(
-        "Delete this campaign? It will be removed from the public site and organiser dashboard.",
-      )
-    ) {
-      return;
-    }
-    setLoading("delete");
+    setLoading(pendingAction);
     setError("");
     try {
-      const res = await fetch(`/api/admininterface/campaigns/${campaignId}`, {
-        method: "DELETE",
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Unable to delete");
+      if (pendingAction === "approve") {
+        await patch({ status: "ACTIVE" });
+      } else {
+        const res = await fetch(`/api/admininterface/campaigns/${campaignId}`, {
+          method: "DELETE",
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Unable to delete");
+      }
+      setPendingAction(null);
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to delete");
+      setError(err instanceof Error ? err.message : "Action failed");
     } finally {
       setLoading(null);
     }
@@ -67,31 +80,48 @@ export function CampaignAdminActions({
     return <span className="text-xs text-[var(--dash-muted)]">Deleted</span>;
   }
 
+  const modal = pendingAction ? actionConfig[pendingAction] : null;
+
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap gap-2">
-        {status === "DRAFT" ? (
+    <>
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-wrap gap-2">
+          {status === "DRAFT" ? (
+            <button
+              type="button"
+              disabled={loading !== null}
+              onClick={() => setPendingAction("approve")}
+              className="dash-btn-primary inline-flex items-center gap-1.5 text-xs"
+            >
+              Approve & go live
+            </button>
+          ) : null}
           <button
             type="button"
             disabled={loading !== null}
-            onClick={() => void approve()}
-            className="dash-btn-primary inline-flex items-center gap-1.5 text-xs"
+            onClick={() => setPendingAction("delete")}
+            className="dash-btn-secondary inline-flex items-center gap-1.5 text-xs text-red-400"
           >
-            {loading === "approve" ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
-            Approve & go live
+            Delete
           </button>
-        ) : null}
-        <button
-          type="button"
-          disabled={loading !== null}
-          onClick={() => void remove()}
-          className="dash-btn-secondary inline-flex items-center gap-1.5 text-xs text-red-400"
-        >
-          {loading === "delete" ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
-          Delete
-        </button>
+        </div>
+        {error ? <p className="text-xs text-red-400">{error}</p> : null}
       </div>
-      {error ? <p className="text-xs text-red-400">{error}</p> : null}
-    </div>
+
+      {modal ? (
+        <ConfirmModal
+          open={pendingAction !== null}
+          onOpenChange={(open) => {
+            if (!open && !loading) setPendingAction(null);
+          }}
+          title={modal.title}
+          description={modal.description}
+          confirmLabel={modal.confirmLabel}
+          variant={modal.variant}
+          loading={loading !== null}
+          onConfirm={handleConfirm}
+        />
+      ) : null}
+    </>
   );
 }

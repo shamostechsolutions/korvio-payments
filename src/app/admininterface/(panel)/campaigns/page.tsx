@@ -68,7 +68,7 @@ export default async function AdminCampaignsPage() {
         </section>
       ) : null}
 
-      <section className="dash-card overflow-x-auto p-5">
+      <section className="dash-card hidden overflow-x-auto p-5 md:block">
         <table className="w-full min-w-[980px] text-left text-sm">
           <thead>
             <tr className="border-b border-[var(--dash-border)] text-[var(--dash-muted)]">
@@ -134,6 +134,70 @@ export default async function AdminCampaignsPage() {
             ))}
           </tbody>
         </table>
+      </section>
+
+      <section className="space-y-3 md:hidden">
+        {campaigns.map((c) => (
+          <article key={c.id} className="dash-card space-y-3 p-4">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div className="min-w-0">
+                {c.status === "ACTIVE" ? (
+                  <Link
+                    href={`/c/${c.campaignCode}`}
+                    target="_blank"
+                    className="font-medium text-[var(--dash-ink)] hover:text-teal-400"
+                  >
+                    {c.name}
+                  </Link>
+                ) : (
+                  <p className="font-medium text-[var(--dash-ink)]">{c.name}</p>
+                )}
+                <p className="mt-1 text-xs text-[var(--dash-muted)]">
+                  {c.campaignCode} · {c.category.replaceAll("_", " ")}
+                  {isOpenFundraising(c) ? " · Open" : ""}
+                </p>
+                <p className="text-xs text-[var(--dash-muted)]">
+                  Created {format(c.createdAt, "MMM d, yyyy")}
+                </p>
+              </div>
+              <span className={statusBadge(c.status)}>{statusLabel(c.status)}</span>
+            </div>
+
+            <dl className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <dt className="text-xs text-[var(--dash-muted)]">Organiser</dt>
+                <dd className="mt-0.5 font-medium text-[var(--dash-ink)]">{c.organiserName}</dd>
+                <dd className="text-xs text-[var(--dash-muted)]">{c.owner.email ?? c.organiserPhone}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-[var(--dash-muted)]">Contributors</dt>
+                <dd className="mt-0.5 font-medium text-[var(--dash-ink)]">{c._count.contributors}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-[var(--dash-muted)]">Raised</dt>
+                <dd className="mt-0.5 font-semibold text-emerald-400">
+                  {formatMoney(c.totalReceived, c.currency)}
+                  {!isOpenFundraising(c) ? (
+                    <span className="block text-xs font-normal text-[var(--dash-muted)]">
+                      / {formatMoney(c.targetAmount, c.currency)}
+                    </span>
+                  ) : null}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-[var(--dash-muted)]">Wallet</dt>
+                <dd className="mt-0.5 font-medium text-[var(--dash-ink)]">
+                  {formatMoney(c.availableBalance, c.currency)}
+                </dd>
+              </div>
+            </dl>
+
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--dash-border)] pt-3">
+              <CampaignVerifyToggle campaignId={c.id} isVerified={c.isVerified} />
+              <CampaignAdminActions campaignId={c.id} status={c.status} />
+            </div>
+          </article>
+        ))}
       </section>
     </div>
   );
