@@ -32,7 +32,7 @@ export async function initiateContributorPayment(input: {
   }
 
   const provider = getPaymentProvider();
-  const fees = provider.calculateFees(input.amount, input.paymentMethod);
+
   const reference =
     input.reference || generateTransactionReference(campaign.campaignCode);
 
@@ -108,9 +108,9 @@ export async function initiateContributorPayment(input: {
       paymentMethod: input.paymentMethod,
       paymentProvider: provider.name,
       paymentStatus: initiation.status,
-      providerFee: fees.providerFee,
-      platformFee: fees.platformFee,
-      netAmount: input.amount - fees.providerFee - fees.platformFee,
+      providerFee: 0,
+      platformFee: 0,
+      netAmount: input.amount,
       payerPhone: input.phoneNumber,
     },
   });
@@ -194,12 +194,9 @@ export async function completePaymentFromWebhook(input: {
     where: { id: payment.id },
     data: {
       paymentStatus: input.status as typeof payment.paymentStatus,
-      providerFee: input.providerFee ?? payment.providerFee,
+      providerFee: 0,
       completedAt: input.status === "SUCCESSFUL" ? new Date() : payment.completedAt,
-      netAmount:
-        payment.amount -
-        (input.providerFee ?? payment.providerFee) -
-        payment.platformFee,
+      netAmount: payment.amount,
     },
   });
 

@@ -4,10 +4,13 @@ import { CampaignContributePanel } from "@/components/campaign/contribute-panel"
 import { CampaignDescription } from "@/components/campaign/campaign-description";
 import { ProgressBar } from "@/components/campaign/progress-bar";
 import { PublicFooter, PublicHeader } from "@/components/campaign/public-shell";
+import { ShareButtons } from "@/components/campaign/share-buttons";
+import { SupportMessagesSection } from "@/components/campaign/support-messages";
 import { prisma } from "@/lib/db";
 import { categoryLabel } from "@/lib/campaigns/labels";
 import { daysRemaining, formatMoney } from "@/lib/utils/money";
 import { publicStatusLabel } from "@/lib/status";
+import { format } from "date-fns";
 
 function initials(name: string) {
   return name
@@ -29,10 +32,23 @@ export default async function PublicCampaignPage({
 
   if (!campaign || campaign.status === "CANCELLED") notFound();
 
-  const contributors = await prisma.contributor.findMany({
-    where: { campaignId: campaign.id },
-    orderBy: { paidAmount: "desc" },
-  });
+  const [contributors, publicUpdates] = await Promise.all([
+    prisma.contributor.findMany({
+      where: { campaignId: campaign.id },
+      orderBy: { paidAmount: "desc" },
+    }),
+    prisma.campaignPublicUpdate.findMany({
+      where: { campaignId: campaign.id },
+      orderBy: { publishedAt: "desc" },
+      take: 10,
+    }),
+  ]);
+
+  const appUrl =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.APP_URL ||
+    "http://localhost:3000";
+  const publicUrl = `${appUrl.replace(/\/$/, "")}/c/${campaign.campaignCode}`;
 
   const progressPct =
     campaign.targetAmount > 0
@@ -103,6 +119,9 @@ export default async function PublicCampaignPage({
             <section className="space-y-4">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="badge">{categoryLabel(campaign.category)}</span>
+                {campaign.isVerified ? (
+                  <span className="badge badge-success">Verified beneficiary</span>
+                ) : null}
                 {isComplete ? (
                   <span className="badge badge-success">Campaign complete</span>
                 ) : (
@@ -113,6 +132,21 @@ export default async function PublicCampaignPage({
               <h1 className="text-3xl font-bold leading-tight tracking-tight text-[var(--ink)] md:text-4xl lg:text-[2.75rem]">
                 {campaign.name}
               </h1>
+
+              <ShareButtons
+                campaignName={campaign.name}
+                campaignCode={campaign.campaignCode}
+                url={publicUrl}
+              />
+
+              {campaign.isVerified ? (
+                <div className="rounded-xl border border-[color-mix(in_srgb,var(--success)_25%,white)] bg-[color-mix(in_srgb,var(--success)_8%,white)] px-4 py-3 text-sm text-[var(--ink-soft)]">
+                  <span className="font-semibold text-[var(--success)]">Verified beneficiary</span>
+                  {" — "}
+                  Our team checked this campaign before giving it the badge. We spoke to the
+                  organiser and confirmed the story is real.
+                </div>
+              ) : null}
 
               <div className="card p-5 md:p-6">
                 <div className="flex items-end justify-between gap-4">
@@ -157,6 +191,30 @@ export default async function PublicCampaignPage({
                 </div>
               </div>
             </section>
+
+            {publicUpdates.length ? (
+              <section className="card p-5 md:p-6">
+                <h2 className="text-lg font-bold text-[var(--ink)]">
+                  Updates ({publicUpdates.length})
+                </h2>
+                <ul className="mt-4 space-y-4">
+                  {publicUpdates.map((u) => (
+                    <li key={u.id} className="border-b border-[var(--line)] pb-4 last:border-0">
+                      <p className="text-sm font-semibold text-[var(--ink)]">
+                        {u.authorName} · {format(u.publishedAt, "yyyy-MM-dd")}
+                      </p>
+                      <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-[var(--ink-soft)]">
+                        {u.body}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
+
+            {campaign.allowSupportMessages ? (
+              <SupportMessagesSection campaignCode={campaign.campaignCode} />
+            ) : null}
 
             {topSupporters.length ? (
               <section className="card p-5 md:p-6">
@@ -238,6 +296,13 @@ export default async function PublicCampaignPage({
                 <p className="mt-4 text-2xl font-bold text-[var(--brand)]">
                   {formatMoney(campaign.totalReceived, campaign.currency)} raised
                 </p>
+                <div className="mt-4">
+                  <ShareButtons
+                    campaignName={campaign.name}
+                    campaignCode={campaign.campaignCode}
+                    url={publicUrl}
+                  />
+                </div>
               </div>
             )}
           </aside>

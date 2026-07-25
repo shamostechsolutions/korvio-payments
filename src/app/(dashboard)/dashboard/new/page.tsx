@@ -45,6 +45,7 @@ export default function NewCampaignPage() {
       beneficiaryName: formData.get("beneficiaryName") || undefined,
       contactPerson: formData.get("contactPerson") || undefined,
       campaignCode: formData.get("campaignCode") || undefined,
+      imageUrl: formData.get("imageUrl") || undefined,
       allowPledges: formData.get("allowPledges") === "on",
       allowPartialPayments: formData.get("allowPartialPayments") === "on",
       allowAnonymous: formData.get("allowAnonymous") === "on",
@@ -106,6 +107,10 @@ export default function NewCampaignPage() {
               rows={3}
               placeholder="Help us celebrate and cover wedding costs with dignity and accountability."
             />
+          </div>
+          <div className="md:col-span-2">
+            <Label>Cover image URL (optional)</Label>
+            <Input name="imageUrl" placeholder="https://example.com/photo.jpg" />
           </div>
           <div>
             <Label>Target amount</Label>

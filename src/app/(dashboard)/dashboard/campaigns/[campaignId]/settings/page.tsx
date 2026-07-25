@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
+import { PublicPageSettings } from "@/components/dashboard/public-page-settings";
 import { getSessionUser } from "@/lib/auth/session";
 import { getCampaignAccess } from "@/lib/campaigns/access";
-import { formatMoney } from "@/lib/utils/money";
 
 export default async function SettingsPage({
   params,
@@ -15,48 +15,35 @@ export default async function SettingsPage({
   if (!access) notFound();
   const c = access.campaign;
 
-  const rows = [
-    ["Campaign code", c.campaignCode],
-    ["Status", c.status],
-    ["Category", c.category],
-    ["Currency", c.currency],
-    ["Target", formatMoney(c.targetAmount, c.currency)],
-    ["Start date", c.startDate.toISOString().slice(0, 10)],
-    ["Deadline", c.deadline.toISOString().slice(0, 10)],
-    ["Organiser", `${c.organiserName} (${c.organiserPhone})`],
-    ["Beneficiary", c.beneficiaryName || "—"],
-    ["Contributor list", c.contributorListVisibility],
-    ["Amount visibility", c.contributionAmountVisibility],
-    ["Allow pledges", c.allowPledges ? "Yes" : "No"],
-    ["Allow partial payments", c.allowPartialPayments ? "Yes" : "No"],
-    ["Allow anonymous", c.allowAnonymous ? "Yes" : "No"],
-    ["Allow in-kind", c.allowInKind ? "Yes" : "No"],
-    ["Payment methods", c.paymentMethods.join(", ")],
-    ["Reminder frequency (days)", String(c.reminderFrequencyDays)],
-  ];
+  const appUrl =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.APP_URL ||
+    "http://localhost:3000";
+  const publicUrl = `${appUrl.replace(/\/$/, "")}/c/${c.campaignCode}`;
 
   return (
     <div className="space-y-6">
-      <div className="surface rounded-3xl p-6">
-        <h1 className="font-[family-name:var(--font-display)] text-3xl font-700 text-[var(--brand)]">
-          Campaign settings
-        </h1>
-        <p className="mt-2 text-[var(--ink-soft)]">
-          Privacy and payment rules for this campaign.
+      <div className="card p-6">
+        <h1 className="text-2xl font-bold text-[var(--ink)]">Public page & settings</h1>
+        <p className="mt-2 text-sm text-[var(--ink-soft)]">
+          Customise your campaign page, post updates, and manage trust badges.
         </p>
       </div>
-      <div className="surface rounded-3xl p-5">
-        <dl className="grid gap-3 sm:grid-cols-2">
-          {rows.map(([label, value]) => (
-            <div key={label}>
-              <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--ink-soft)]">
-                {label}
-              </dt>
-              <dd className="mt-1 text-sm font-medium text-[var(--ink)]">{value}</dd>
-            </div>
-          ))}
-        </dl>
-      </div>
+
+      {access.role === "OWNER" ? (
+        <PublicPageSettings
+          campaignId={c.id}
+          initialImageUrl={c.imageUrl}
+          initialVerified={c.isVerified}
+          initialAllowSupport={c.allowSupportMessages}
+          publicUrl={publicUrl}
+          organiserName={c.organiserName}
+        />
+      ) : (
+        <p className="text-sm text-[var(--ink-soft)]">
+          Only the campaign owner can edit public page settings.
+        </p>
+      )}
     </div>
   );
 }

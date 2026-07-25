@@ -1,8 +1,50 @@
 import { prisma } from "@/lib/db";
 import { deriveContributorStatus } from "@/lib/status";
 
+export async function recalculateCampaignWallet(campaignId: string) {
+  const [receivedAgg, expenseAgg, cashoutAgg, feeAgg] = await Promise.all([
+    prisma.payment.aggregate({
+      where: { campaignId, paymentStatus: "SUCCESSFUL" },
+      _sum: { amount: true },
+    }),
+    prisma.expense.aggregate({
+      where: { campaignId, approvalStatus: "APPROVED" },
+      _sum: { amount: true },
+    }),
+    prisma.cashout.aggregate({
+      where: {
+        campaignId,
+        status: { in: ["PENDING", "PROCESSING", "COMPLETED"] },
+      },
+      _sum: { amount: true },
+    }),
+    prisma.cashout.aggregate({
+      where: { campaignId, status: "COMPLETED" },
+      _sum: { platformFee: true },
+    }),
+  ]);
+
+  const totalReceived = receivedAgg._sum.amount ?? 0;
+  const totalExpenses = expenseAgg._sum.amount ?? 0;
+  const reservedForCashouts = cashoutAgg._sum.amount ?? 0;
+  const totalFees = feeAgg._sum.platformFee ?? 0;
+  const availableBalance = Math.max(0, totalReceived - totalExpenses - reservedForCashouts);
+
+  await prisma.campaign.update({
+    where: { id: campaignId },
+    data: {
+      totalReceived,
+      totalExpenses,
+      totalFees,
+      availableBalance,
+    },
+  });
+
+  return { totalReceived, totalExpenses, totalFees, availableBalance };
+}
+
 export async function recalculateContributorAndCampaign(contributorId: string) {
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const contributor = await tx.contributor.findUniqueOrThrow({
       where: { id: contributorId },
       include: {
@@ -40,22 +82,10 @@ export async function recalculateContributorAndCampaign(contributorId: string) {
     });
 
     const campaignId = contributor.campaignId;
-    const [pledgedAgg, receivedAgg, expenseAgg, feeAgg, inKindAgg] = await Promise.all([
+    const [pledgedAgg, inKindAgg] = await Promise.all([
       tx.contributor.aggregate({
         where: { campaignId },
         _sum: { pledgedAmount: true },
-      }),
-      tx.payment.aggregate({
-        where: { campaignId, paymentStatus: "SUCCESSFUL" },
-        _sum: { amount: true, platformFee: true, providerFee: true },
-      }),
-      tx.expense.aggregate({
-        where: { campaignId, approvalStatus: "APPROVED" },
-        _sum: { amount: true },
-      }),
-      tx.payment.aggregate({
-        where: { campaignId, paymentStatus: "SUCCESSFUL" },
-        _sum: { platformFee: true, providerFee: true },
       }),
       tx.inKindContribution.aggregate({
         where: { campaignId, status: { in: ["DELIVERED", "VERIFIED", "PLEDGED"] } },
@@ -63,26 +93,23 @@ export async function recalculateContributorAndCampaign(contributorId: string) {
       }),
     ]);
 
-    const totalPledged = pledgedAgg._sum.pledgedAmount ?? 0;
-    const totalReceived = receivedAgg._sum.amount ?? 0;
-    const totalExpenses = expenseAgg._sum.amount ?? 0;
-    const totalFees =
-      (feeAgg._sum.platformFee ?? 0) + (feeAgg._sum.providerFee ?? 0);
-    const totalInKindValue = inKindAgg._sum.estimatedValue ?? 0;
-    const availableBalance = totalReceived - totalFees - totalExpenses;
-
     await tx.campaign.update({
       where: { id: campaignId },
       data: {
-        totalPledged,
-        totalReceived,
-        totalExpenses,
-        totalFees,
-        totalInKindValue,
-        availableBalance,
+        totalPledged: pledgedAgg._sum.pledgedAmount ?? 0,
+        totalInKindValue: inKindAgg._sum.estimatedValue ?? 0,
       },
     });
 
-    return { pledgedAmount, paidAmount, outstandingAmount, status };
+    return { campaignId, pledgedAmount, paidAmount, outstandingAmount, status };
   });
+
+  await recalculateCampaignWallet(result.campaignId);
+
+  return {
+    pledgedAmount: result.pledgedAmount,
+    paidAmount: result.paidAmount,
+    outstandingAmount: result.outstandingAmount,
+    status: result.status,
+  };
 }

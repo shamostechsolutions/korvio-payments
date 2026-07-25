@@ -68,6 +68,9 @@ export default async function CampaignOverviewPage({
             <Link href={`/c/${campaign.campaignCode}`} target="_blank">
               <Button variant="secondary">Public page</Button>
             </Link>
+            <Link href={`/dashboard/campaigns/${campaign.id}/wallet`}>
+              <Button variant="secondary">Wallet & cash-out</Button>
+            </Link>
             <Link href={`/dashboard/campaigns/${campaign.id}/updates`}>
               <Button>Group update</Button>
             </Link>
@@ -91,7 +94,7 @@ export default async function CampaignOverviewPage({
         <StatCard
           label="Available balance"
           value={formatMoney(campaign.availableBalance, campaign.currency)}
-          hint={`Expenses ${formatMoney(campaign.totalExpenses, campaign.currency)}`}
+          hint={`Expenses ${formatMoney(campaign.totalExpenses, campaign.currency)} · Wallet`}
         />
         <StatCard label="Contributors" value={String(contributors.length)} />
         <StatCard label="Fully paid" value={String(counts.fullyPaid)} />

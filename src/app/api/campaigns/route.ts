@@ -49,6 +49,7 @@ const createSchema = z.object({
     .optional(),
   contributionAmountVisibility: z.enum(["PRIVATE", "PUBLIC_OPT_IN", "PUBLIC"]).optional(),
   campaignCode: z.string().optional(),
+  imageUrl: z.string().url().optional(),
 });
 
 export async function GET() {
@@ -92,6 +93,7 @@ export async function POST(request: Request) {
       organiserPhone: body.organiserPhone.replace(/\D/g, ""),
       beneficiaryName: body.beneficiaryName,
       contactPerson: body.contactPerson,
+      imageUrl: body.imageUrl,
       allowPledges: body.allowPledges,
       allowPartialPayments: body.allowPartialPayments,
       allowAnonymous: body.allowAnonymous,

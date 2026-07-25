@@ -133,6 +133,14 @@ enum ExpenseApprovalStatus {
   REJECTED
 }
 
+enum CashoutStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
 enum InKindStatus {
   PLEDGED
   DELIVERED
@@ -206,6 +214,7 @@ model User {
   recordedPayments Payment[]              @relation("PaymentRecorder")
   recordedExpenses Expense[]              @relation("ExpenseRecorder")
   approvedExpenses Expense[]              @relation("ExpenseApprover")
+  requestedCashouts Cashout[]            @relation("CashoutRequester")
   createdReminders Reminder[]             @relation("ReminderCreator")
   verifiedInKinds  InKindContribution[]   @relation("InKindVerifier")
 
@@ -262,6 +271,8 @@ model Campaign {
   deadline                    DateTime
   status                      CampaignStatus             @default(DRAFT)
   imageUrl                    String?                    @map("image_url")
+  isVerified                  Boolean                    @default(false) @map("is_verified")
+  allowSupportMessages        Boolean                    @default(true) @map("allow_support_messages")
   organiserName               String                     @map("organiser_name")
   organiserPhone              String                     @map("organiser_phone")
   beneficiaryName             String?                    @map("beneficiary_name")
@@ -296,6 +307,9 @@ model Campaign {
   auditLogs       AuditLog[]
   milestones      CampaignMilestone[]
   webhookEvents   WebhookEvent[]
+  publicUpdates   CampaignPublicUpdate[]
+  supportMessages CampaignSupportMessage[]
+  cashouts        Cashout[]
 
   @@index([ownerId])
   @@index([status])
@@ -352,6 +366,7 @@ model Contributor {
   reminders     Reminder[]
   inKindItems   InKindContribution[]
   conversations WhatsAppConversation[]
+  supportMessages CampaignSupportMessage[]
 
   @@unique([campaignId, phoneNumber])
   @@index([campaignId, status])
@@ -439,6 +454,27 @@ model Expense {
 
   @@index([campaignId])
   @@map("expenses")
+}
+
+model Cashout {
+  id            String        @id @default(cuid())
+  campaignId    String        @map("campaign_id")
+  requestedById String        @map("requested_by_id")
+  amount        Int
+  platformFee   Int           @map("platform_fee")
+  netAmount     Int           @map("net_amount")
+  payoutPhone   String        @map("payout_phone")
+  payoutMethod  PaymentMethod @default(MTN_MOMO) @map("payout_method")
+  status        CashoutStatus @default(PENDING)
+  requestedAt   DateTime      @default(now()) @map("requested_at")
+  processedAt   DateTime?     @map("processed_at")
+  notes         String?
+
+  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  requestedBy User     @relation("CashoutRequester", fields: [requestedById], references: [id])
+
+  @@index([campaignId, status])
+  @@map("cashouts")
 }
 
 model BudgetItem {
@@ -548,6 +584,35 @@ model CampaignMilestone {
 
   @@unique([campaignId, key])
   @@map("campaign_milestones")
+}
+
+model CampaignPublicUpdate {
+  id          String   @id @default(cuid())
+  campaignId  String   @map("campaign_id")
+  authorName  String   @map("author_name")
+  body        String
+  publishedAt DateTime @default(now()) @map("published_at")
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId, publishedAt])
+  @@map("campaign_public_updates")
+}
+
+model CampaignSupportMessage {
+  id            String   @id @default(cuid())
+  campaignId    String   @map("campaign_id")
+  contributorId String?  @map("contributor_id")
+  authorName    String   @map("author_name")
+  body          String
+  anonymous     Boolean  @default(false)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  campaign    Campaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  contributor Contributor? @relation(fields: [contributorId], references: [id], onDelete: SetNull)
+
+  @@index([campaignId, createdAt])
+  @@map("campaign_support_messages")
 }
 
 model WebhookEvent {

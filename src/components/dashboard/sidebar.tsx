@@ -10,13 +10,14 @@ const links = [
   { href: "overview", label: "Overview" },
   { href: "contributors", label: "Contributors" },
   { href: "payments", label: "Payments" },
+  { href: "wallet", label: "Wallet & cash-out" },
   { href: "expenses", label: "Expenses" },
   { href: "budget", label: "Budget" },
   { href: "updates", label: "WhatsApp updates" },
   { href: "reminders", label: "Reminders" },
   { href: "reports", label: "Reports" },
   { href: "admins", label: "Administrators" },
-  { href: "settings", label: "Settings" },
+  { href: "settings", label: "Public page" },
   { href: "activity", label: "Activity log" },
 ];
 
