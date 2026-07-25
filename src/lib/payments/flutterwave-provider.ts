@@ -109,8 +109,13 @@ export class FlutterwavePaymentProvider implements PaymentProvider {
   }
 
   async checkPaymentStatus(providerReference: string): Promise<PaymentStatus> {
+    const verified = await this.verifyPaymentByReference(providerReference);
+    return verified?.status ?? "PENDING";
+  }
+
+  async verifyPaymentByReference(txRef: string): Promise<WebhookResult | null> {
     const response = await fetch(
-      `${FLW_API}/transactions/verify_by_reference?tx_ref=${encodeURIComponent(providerReference)}`,
+      `${FLW_API}/transactions/verify_by_reference?tx_ref=${encodeURIComponent(txRef)}`,
       {
         headers: { Authorization: `Bearer ${secretKey()}` },
       },
@@ -118,14 +123,27 @@ export class FlutterwavePaymentProvider implements PaymentProvider {
 
     const payload = (await response.json()) as {
       status: string;
-      data?: { status?: string };
+      data?: {
+        id?: number;
+        tx_ref?: string;
+        status?: string;
+        amount?: number;
+        app_fee?: number;
+      };
     };
 
-    if (!response.ok || payload.status !== "success" || !payload.data?.status) {
-      return "PENDING";
+    if (!response.ok || payload.status !== "success" || !payload.data?.tx_ref) {
+      return null;
     }
 
-    return mapFlutterwaveStatus(payload.data.status);
+    return {
+      eventId: String(payload.data.id ?? txRef),
+      providerReference: payload.data.tx_ref,
+      status: mapFlutterwaveStatus(payload.data.status ?? "pending"),
+      amount: payload.data.amount,
+      providerFee: payload.data.app_fee ?? 0,
+      raw: payload,
+    };
   }
 
   async processWebhook(headers: Headers, body: unknown): Promise<WebhookResult> {

@@ -225,3 +225,27 @@ export async function completePaymentFromWebhook(input: {
 
   return { duplicate: false as const, payment: updated };
 }
+
+export async function confirmPaymentOnReturn(txRef: string) {
+  const provider = getPaymentProvider();
+  if (provider.name !== "flutterwave" || !("verifyPaymentByReference" in provider)) {
+    return null;
+  }
+
+  const verified = await (
+    provider as { verifyPaymentByReference: (ref: string) => Promise<import("./types").WebhookResult | null> }
+  ).verifyPaymentByReference(txRef);
+
+  if (!verified) return null;
+
+  await completePaymentFromWebhook({
+    provider: provider.name,
+    eventId: verified.eventId,
+    providerReference: verified.providerReference,
+    status: verified.status,
+    providerFee: verified.providerFee,
+    raw: verified.raw,
+  });
+
+  return verified;
+}
