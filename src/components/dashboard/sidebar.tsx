@@ -14,7 +14,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
-import { useDashNavigate } from "@/components/dashboard/dash-shell";
+import { useDashNavigate, useDashNavigateClick } from "@/components/dashboard/dash-shell";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { cn } from "@/lib/utils/cn";
 
@@ -37,6 +37,7 @@ export function DashboardSidebar({
   const pathname = usePathname();
   const router = useRouter();
   const onNavigate = useDashNavigate();
+  const onNavigateClick = useDashNavigateClick();
   const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -76,7 +77,7 @@ export function DashboardSidebar({
           <nav className="space-y-0.5">
             <Link
               href="/dashboard"
-              onClick={onNavigate}
+              onClick={onNavigateClick}
               className={cn("dash-nav-item", pathname === "/dashboard" && "active")}
             >
               <LayoutDashboard className="h-4 w-4 shrink-0" />
@@ -84,7 +85,7 @@ export function DashboardSidebar({
             </Link>
             <Link
               href="/dashboard/new"
-              onClick={onNavigate}
+              onClick={onNavigateClick}
               className={cn("dash-nav-item", pathname === "/dashboard/new" && "active")}
             >
               <Plus className="h-4 w-4 shrink-0" />
@@ -93,7 +94,7 @@ export function DashboardSidebar({
             {isPlatformAdmin ? (
               <Link
                 href="/admininterface"
-                onClick={onNavigate}
+                onClick={onNavigateClick}
                 className={cn(
                   "dash-nav-item mt-2 border border-teal-500/20",
                   pathname.startsWith("/admininterface") && "active",
@@ -119,7 +120,7 @@ export function DashboardSidebar({
                     <Link
                       key={link.href}
                       href={href}
-                      onClick={onNavigate}
+                      onClick={onNavigateClick}
                       className={cn("dash-nav-item", active && "active")}
                     >
                       <Icon className="h-4 w-4 shrink-0" />

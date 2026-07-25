@@ -11,7 +11,7 @@ import {
   Shield,
 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
-import { useDashNavigate } from "@/components/dashboard/dash-shell";
+import { useDashNavigate, useDashNavigateClick } from "@/components/dashboard/dash-shell";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { cn } from "@/lib/utils/cn";
 
@@ -25,6 +25,7 @@ export function AdminSidebar({ userName }: { userName?: string }) {
   const pathname = usePathname();
   const router = useRouter();
   const onNavigate = useDashNavigate();
+  const onNavigateClick = useDashNavigateClick();
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
 
@@ -65,7 +66,7 @@ export function AdminSidebar({ userName }: { userName?: string }) {
               <Link
                 key={href}
                 href={href}
-                onClick={onNavigate}
+                onClick={onNavigateClick}
                 className={cn("dash-nav-item", active && "active")}
               >
                 <Icon className="h-4 w-4 shrink-0" />
@@ -79,7 +80,7 @@ export function AdminSidebar({ userName }: { userName?: string }) {
           {userName ? (
             <p className="mb-2 truncate px-3 text-xs text-[var(--dash-muted)]">{userName}</p>
           ) : null}
-          <Link href="/dashboard" onClick={onNavigate} className="dash-nav-item mb-1">
+          <Link href="/dashboard" onClick={onNavigateClick} className="dash-nav-item mb-1">
             Organiser dashboard
           </Link>
           <button

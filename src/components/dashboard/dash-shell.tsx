@@ -5,10 +5,15 @@ import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils/cn";
 
-const DashNavContext = createContext<(() => void) | null>(null);
+const DashNavContext = createContext<(() => void) | undefined>(undefined);
 
 export function useDashNavigate() {
   return useContext(DashNavContext);
+}
+
+export function useDashNavigateClick() {
+  const onNavigate = useDashNavigate();
+  return onNavigate ? () => onNavigate() : undefined;
 }
 
 export function DashShell({
