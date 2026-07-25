@@ -49,12 +49,6 @@ export default async function AdminPanelLayout({
   }
 
   return (
-    <DashShell
-      renderSidebar={({ onNavigate }) => (
-        <AdminSidebar userName={user.fullName} onNavigate={onNavigate} />
-      )}
-    >
-      {children}
-    </DashShell>
+    <DashShell sidebar={<AdminSidebar userName={user.fullName} />}>{children}</DashShell>
   );
 }

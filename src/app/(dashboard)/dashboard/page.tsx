@@ -37,11 +37,7 @@ export default async function DashboardHomePage() {
   );
 
   return (
-    <DashShell
-      renderSidebar={({ onNavigate }) => (
-        <DashboardSidebar userName={user.fullName} onNavigate={onNavigate} />
-      )}
-    >
+    <DashShell sidebar={<DashboardSidebar userName={user.fullName} />}>
       <div className="space-y-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>

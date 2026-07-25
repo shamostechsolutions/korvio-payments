@@ -19,14 +19,13 @@ export default async function CampaignLayout({
 
   return (
     <DashShell
-      renderSidebar={({ onNavigate }) => (
+      sidebar={
         <DashboardSidebar
           campaignId={access.campaign.id}
           campaignName={access.campaign.name}
           userName={user.fullName}
-          onNavigate={onNavigate}
         />
-      )}
+      }
     >
       {children}
     </DashShell>

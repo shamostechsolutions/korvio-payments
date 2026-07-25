@@ -14,6 +14,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
+import { useDashNavigate } from "@/components/dashboard/dash-shell";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { cn } from "@/lib/utils/cn";
 
@@ -29,15 +30,14 @@ export function DashboardSidebar({
   campaignId,
   campaignName,
   userName,
-  onNavigate,
 }: {
   campaignId?: string;
   campaignName?: string;
   userName?: string;
-  onNavigate?: () => void;
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const onNavigate = useDashNavigate();
   const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);

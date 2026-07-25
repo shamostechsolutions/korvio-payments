@@ -84,7 +84,7 @@ export default function NewCampaignPage() {
   }
 
   return (
-    <DashShell renderSidebar={({ onNavigate }) => <DashboardSidebar onNavigate={onNavigate} />}>
+    <DashShell sidebar={<DashboardSidebar />}>
       <div className="dash-card p-6 md:p-8">
         <DashPageHeader
           title="Create a campaign"

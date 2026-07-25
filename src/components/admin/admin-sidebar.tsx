@@ -11,6 +11,7 @@ import {
   Shield,
 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
+import { useDashNavigate } from "@/components/dashboard/dash-shell";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { cn } from "@/lib/utils/cn";
 
@@ -20,15 +21,10 @@ const links = [
   { href: "/admininterface/cashouts", label: "Cash-outs", icon: ArrowLeftRight },
 ];
 
-export function AdminSidebar({
-  userName,
-  onNavigate,
-}: {
-  userName?: string;
-  onNavigate?: () => void;
-}) {
+export function AdminSidebar({ userName }: { userName?: string }) {
   const pathname = usePathname();
   const router = useRouter();
+  const onNavigate = useDashNavigate();
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
 
