@@ -3,9 +3,11 @@ import { cn } from "@/lib/utils/cn";
 export function Logo({
   className,
   compact = false,
+  dark = false,
 }: {
   className?: string;
   compact?: boolean;
+  dark?: boolean;
 }) {
   return (
     <div className={cn("flex items-center gap-2", className)}>
@@ -13,7 +15,12 @@ export function Logo({
         K
       </span>
       {!compact ? (
-        <span className="font-[family-name:var(--font-display)] text-xl font-800 tracking-tight text-[var(--brand)]">
+        <span
+          className={cn(
+            "font-[family-name:var(--font-display)] text-xl font-800 tracking-tight",
+            dark ? "text-[var(--dash-ink)]" : "text-[var(--brand)]",
+          )}
+        >
           Korvio
         </span>
       ) : null}

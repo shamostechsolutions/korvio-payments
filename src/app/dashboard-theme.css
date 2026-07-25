@@ -1,0 +1,130 @@
+.dashboard-theme {
+  --dash-bg: #09090b;
+  --dash-sidebar: #0c0c0e;
+  --dash-card: #141417;
+  --dash-card-hover: #1a1a1f;
+  --dash-border: #27272a;
+  --dash-ink: #fafafa;
+  --dash-muted: #a1a1aa;
+  --dash-brand: #14b8a6;
+  --dash-brand-dim: rgba(20, 184, 166, 0.12);
+  --dash-success: #22c55e;
+  --dash-warning: #f59e0b;
+  --dash-danger: #ef4444;
+
+  background: var(--dash-bg);
+  color: var(--dash-ink);
+  min-height: 100vh;
+}
+
+.dashboard-theme .dash-sidebar {
+  background: var(--dash-sidebar);
+  border-right: 1px solid var(--dash-border);
+}
+
+.dashboard-theme .dash-card {
+  background: var(--dash-card);
+  border: 1px solid var(--dash-border);
+  border-radius: 1rem;
+}
+
+.dashboard-theme .dash-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--dash-muted);
+  transition: background 0.15s, color 0.15s;
+}
+
+.dashboard-theme .dash-nav-item:hover {
+  background: var(--dash-card);
+  color: var(--dash-ink);
+}
+
+.dashboard-theme .dash-nav-item.active {
+  background: var(--dash-brand-dim);
+  color: var(--dash-brand);
+}
+
+.dashboard-theme .dash-stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--dash-ink);
+}
+
+.dashboard-theme .dash-stat-label {
+  font-size: 0.8125rem;
+  color: var(--dash-muted);
+}
+
+.dashboard-theme .dash-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.75rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: var(--dash-brand);
+  color: #042f2e;
+  transition: opacity 0.15s;
+}
+
+.dashboard-theme .dash-btn-primary:hover {
+  opacity: 0.9;
+}
+
+.dashboard-theme .dash-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.75rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 1px solid var(--dash-border);
+  background: var(--dash-card);
+  color: var(--dash-ink);
+  transition: background 0.15s;
+}
+
+.dashboard-theme .dash-btn-secondary:hover {
+  background: var(--dash-card-hover);
+}
+
+.dashboard-theme .dash-input {
+  background: var(--dash-bg);
+  border: 1px solid var(--dash-border);
+  color: var(--dash-ink);
+  border-radius: 0.75rem;
+}
+
+.dashboard-theme .surface {
+  background: var(--dash-card);
+  border: 1px solid var(--dash-border);
+  box-shadow: none;
+}
+
+.dashboard-theme .text-\[var\(--brand\)\] {
+  color: var(--dash-brand);
+}
+
+.dashboard-theme .text-\[var\(--ink-soft\)\] {
+  color: var(--dash-muted);
+}
+
+.dashboard-theme .text-\[var\(--ink\)\] {
+  color: var(--dash-ink);
+}
+
+.dashboard-theme .h-2\.5.rounded-full.bg-\[var\(--line\)\],
+.dashboard-theme [class*="bg-[var(--line)]"] {
+  background: var(--dash-border) !important;
+}

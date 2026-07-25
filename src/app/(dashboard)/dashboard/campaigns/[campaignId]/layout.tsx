@@ -17,12 +17,13 @@ export default async function CampaignLayout({
   if (!access) notFound();
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-7xl flex-col gap-4 p-4 md:flex-row md:p-6">
+    <div className="flex min-h-screen">
       <DashboardSidebar
         campaignId={access.campaign.id}
         campaignName={access.campaign.name}
+        userName={user.fullName}
       />
-      <main className="min-w-0 flex-1">{children}</main>
+      <main className="min-w-0 flex-1 overflow-auto p-4 md:p-6 lg:p-8">{children}</main>
     </div>
   );
 }

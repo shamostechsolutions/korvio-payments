@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
 
 export default function UpdatesPage() {
   const params = useParams<{ campaignId: string }>();
@@ -34,45 +33,50 @@ export default function UpdatesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="surface rounded-3xl p-6">
-        <h1 className="font-[family-name:var(--font-display)] text-3xl font-700 text-[var(--brand)]">
-          WhatsApp updates
-        </h1>
-        <p className="mt-2 text-[var(--ink-soft)]">
-          Korvio generates a fresh group update you can paste into WhatsApp. Individual amounts stay private.
+      <div className="dash-card p-6">
+        <h1 className="text-2xl font-bold text-[var(--dash-ink)]">Group updates</h1>
+        <p className="mt-2 text-sm text-[var(--dash-muted)]">
+          Generate a progress update you can copy and share with your group. Individual amounts
+          stay private.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
-          <Button onClick={() => void load(true)}>Generate with list</Button>
-          <Button variant="secondary" onClick={() => void load(false)}>
+          <button type="button" onClick={() => void load(true)} className="dash-btn-primary">
+            Generate with list
+          </button>
+          <button type="button" onClick={() => void load(false)} className="dash-btn-secondary">
             Totals only
-          </Button>
+          </button>
         </div>
       </div>
 
-      <section className="surface rounded-3xl p-5">
+      <section className="dash-card p-5">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="font-semibold text-[var(--brand)]">Group update</h2>
-          <Button size="sm" variant="secondary" onClick={() => void copy(update, "update")}>
+          <h2 className="font-semibold text-[var(--dash-ink)]">Group update</h2>
+          <button
+            type="button"
+            className="dash-btn-secondary text-sm"
+            onClick={() => void copy(update, "update")}
+          >
             {copied === "update" ? "Copied" : "Copy"}
-          </Button>
+          </button>
         </div>
-        <pre className="mt-4 whitespace-pre-wrap rounded-2xl bg-[#0b3d32] p-4 text-sm text-[#f3e7c8]">
+        <pre className="mt-4 whitespace-pre-wrap rounded-xl bg-[var(--dash-bg)] p-4 text-sm text-[var(--dash-ink)]">
           {update || "Generating..."}
         </pre>
       </section>
 
-      <section className="surface rounded-3xl p-5">
+      <section className="dash-card p-5">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="font-semibold text-[var(--brand)]">Shareable invite</h2>
-          <Button
-            size="sm"
-            variant="secondary"
+          <h2 className="font-semibold text-[var(--dash-ink)]">Shareable invite</h2>
+          <button
+            type="button"
+            className="dash-btn-secondary text-sm"
             onClick={() => void copy(shareMessage, "share")}
           >
             {copied === "share" ? "Copied" : "Copy"}
-          </Button>
+          </button>
         </div>
-        <pre className="mt-4 whitespace-pre-wrap rounded-2xl bg-white p-4 text-sm text-[var(--ink)]">
+        <pre className="mt-4 whitespace-pre-wrap rounded-xl bg-[var(--dash-bg)] p-4 text-sm text-[var(--dash-muted)]">
           {shareMessage}
         </pre>
       </section>

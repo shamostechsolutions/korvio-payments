@@ -2,31 +2,48 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import {
+  Activity,
+  BarChart3,
+  Bell,
+  CreditCard,
+  Globe,
+  LayoutDashboard,
+  LogOut,
+  Megaphone,
+  Plus,
+  Receipt,
+  Settings,
+  Shield,
+  Users,
+  Wallet,
+} from "lucide-react";
 import { Logo } from "@/components/brand/logo";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/cn";
 
-const links = [
-  { href: "overview", label: "Overview" },
-  { href: "contributors", label: "Contributors" },
-  { href: "payments", label: "Payments" },
-  { href: "wallet", label: "Wallet & cash-out" },
-  { href: "expenses", label: "Expenses" },
-  { href: "budget", label: "Budget" },
-  { href: "updates", label: "WhatsApp updates" },
-  { href: "reminders", label: "Reminders" },
-  { href: "reports", label: "Reports" },
-  { href: "admins", label: "Administrators" },
-  { href: "settings", label: "Public page" },
-  { href: "activity", label: "Activity log" },
+const campaignLinks = [
+  { href: "overview", label: "Overview", icon: LayoutDashboard },
+  { href: "contributors", label: "Contributors", icon: Users },
+  { href: "payments", label: "Payments", icon: CreditCard },
+  { href: "wallet", label: "Wallet & cash-out", icon: Wallet },
+  { href: "expenses", label: "Expenses", icon: Receipt },
+  { href: "budget", label: "Budget", icon: BarChart3 },
+  { href: "updates", label: "Group updates", icon: Megaphone },
+  { href: "reminders", label: "Reminders", icon: Bell },
+  { href: "reports", label: "Reports", icon: BarChart3 },
+  { href: "admins", label: "Administrators", icon: Shield },
+  { href: "settings", label: "Public page", icon: Globe },
+  { href: "activity", label: "Activity log", icon: Activity },
 ];
 
 export function DashboardSidebar({
   campaignId,
   campaignName,
+  userName,
 }: {
   campaignId?: string;
   campaignName?: string;
+  userName?: string;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -38,69 +55,77 @@ export function DashboardSidebar({
   }
 
   return (
-    <aside className="surface flex h-full w-full flex-col rounded-3xl p-4 md:w-64">
-      <Logo />
-      <p className="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--ink-soft)]">
-        Dashboard
-      </p>
-      <nav className="mt-3 flex flex-col gap-1">
-        <Link
-          href="/dashboard"
-          className={cn(
-            "rounded-xl px-3 py-2 text-sm font-medium",
-            pathname === "/dashboard"
-              ? "bg-[var(--brand)] text-white"
-              : "text-[var(--ink-soft)] hover:bg-white",
-          )}
-        >
-          All campaigns
-        </Link>
-        <Link
-          href="/dashboard/new"
-          className={cn(
-            "rounded-xl px-3 py-2 text-sm font-medium",
-            pathname === "/dashboard/new"
-              ? "bg-[var(--brand)] text-white"
-              : "text-[var(--ink-soft)] hover:bg-white",
-          )}
-        >
-          New campaign
-        </Link>
-      </nav>
+    <aside className="dash-sidebar flex h-screen w-full shrink-0 flex-col md:w-[240px]">
+      <div className="border-b border-[var(--dash-border)] px-4 py-5">
+        <Logo dark />
+      </div>
 
-      {campaignId ? (
-        <>
-          <p className="mt-6 truncate text-xs font-semibold uppercase tracking-[0.14em] text-[var(--ink-soft)]">
-            {campaignName || "Campaign"}
-          </p>
-          <nav className="mt-3 flex flex-1 flex-col gap-1 overflow-auto">
-            {links.map((link) => {
-              const href = `/dashboard/campaigns/${campaignId}/${link.href}`;
-              const active = pathname.startsWith(href);
-              return (
-                <Link
-                  key={link.href}
-                  href={href}
-                  className={cn(
-                    "rounded-xl px-3 py-2 text-sm font-medium",
-                    active
-                      ? "bg-[var(--brand)] text-white"
-                      : "text-[var(--ink-soft)] hover:bg-white",
-                  )}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
-          </nav>
-        </>
-      ) : (
-        <div className="flex-1" />
-      )}
+      <div className="flex-1 overflow-y-auto px-3 py-4">
+        <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-[var(--dash-muted)]">
+          Menu
+        </p>
+        <nav className="space-y-0.5">
+          <Link
+            href="/dashboard"
+            className={cn(
+              "dash-nav-item",
+              pathname === "/dashboard" && "active",
+            )}
+          >
+            <LayoutDashboard className="h-4 w-4 shrink-0" />
+            All campaigns
+          </Link>
+          <Link
+            href="/dashboard/new"
+            className={cn(
+              "dash-nav-item",
+              pathname === "/dashboard/new" && "active",
+            )}
+          >
+            <Plus className="h-4 w-4 shrink-0" />
+            New campaign
+          </Link>
+        </nav>
 
-      <Button variant="ghost" className="mt-4 justify-start" onClick={logout}>
-        Log out
-      </Button>
+        {campaignId ? (
+          <>
+            <p className="mb-2 mt-6 truncate px-3 text-[10px] font-semibold uppercase tracking-widest text-[var(--dash-muted)]">
+              {campaignName || "Campaign"}
+            </p>
+            <nav className="space-y-0.5">
+              {campaignLinks.map((link) => {
+                const href = `/dashboard/campaigns/${campaignId}/${link.href}`;
+                const active = pathname.startsWith(href);
+                const Icon = link.icon;
+                return (
+                  <Link
+                    key={link.href}
+                    href={href}
+                    className={cn("dash-nav-item", active && "active")}
+                  >
+                    <Icon className="h-4 w-4 shrink-0" />
+                    {link.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          </>
+        ) : null}
+      </div>
+
+      <div className="border-t border-[var(--dash-border)] p-3">
+        {userName ? (
+          <p className="mb-2 truncate px-3 text-xs text-[var(--dash-muted)]">{userName}</p>
+        ) : null}
+        <button
+          type="button"
+          onClick={() => void logout()}
+          className="dash-nav-item w-full"
+        >
+          <LogOut className="h-4 w-4 shrink-0" />
+          Log out
+        </button>
+      </div>
     </aside>
   );
 }

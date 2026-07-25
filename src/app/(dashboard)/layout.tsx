@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/session";
+import "../dashboard-theme.css";
 
 export default async function DashboardGroupLayout({
   children,
@@ -8,5 +9,5 @@ export default async function DashboardGroupLayout({
 }) {
   const user = await getSessionUser();
   if (!user) redirect("/login");
-  return children;
+  return <div className="dashboard-theme">{children}</div>;
 }

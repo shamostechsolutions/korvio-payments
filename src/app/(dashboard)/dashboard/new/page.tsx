@@ -69,15 +69,16 @@ export default function NewCampaignPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-7xl flex-col gap-4 p-4 md:flex-row md:p-6">
+    <div className="flex min-h-screen">
       <DashboardSidebar />
-      <main className="surface flex-1 rounded-3xl p-6 md:p-8">
-        <h1 className="font-[family-name:var(--font-display)] text-3xl font-700 text-[var(--brand)]">
+      <main className="min-w-0 flex-1 overflow-auto p-4 md:p-6 lg:p-8">
+        <div className="dash-card p-6 md:p-8">
+        <h1 className="text-2xl font-bold text-[var(--dash-ink)] md:text-3xl">
           Create a campaign
         </h1>
-        <p className="mt-2 text-[var(--ink-soft)]">
-          Set the target, privacy rules and payment options. Korvio will generate a
-          WhatsApp join link for your group.
+        <p className="mt-2 text-sm text-[var(--dash-muted)]">
+          Set the target, privacy rules and payment options. Korvio will generate a public page
+          link you can share with your group.
         </p>
 
         <form action={onSubmit} className="mt-8 grid gap-4 md:grid-cols-2">
@@ -197,6 +198,7 @@ export default function NewCampaignPage() {
             <Button disabled={loading}>{loading ? "Creating..." : "Create campaign"}</Button>
           </div>
         </form>
+        </div>
       </main>
     </div>
   );
