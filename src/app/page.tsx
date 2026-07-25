@@ -70,10 +70,6 @@ const FAQ = [
     q: "Can people see how much others gave?",
     a: "You control visibility. By default individual amounts stay private. Contributors can opt in to show their name or amount on the public page.",
   },
-  {
-    q: "Is WhatsApp required?",
-    a: "No. Everything works on the web. WhatsApp reminders are optional when you connect your Meta business account later.",
-  },
 ];
 
 const CATEGORIES = Object.entries(CATEGORY_LABELS).slice(0, 8);
