@@ -1,4 +1,4 @@
-import type { Campaign } from "@prisma/client";
+import type { Campaign, FundraisingMode } from "@prisma/client";
 import { isOpenFundraising } from "@/lib/campaigns/fundraising";
 
 /** Minimum wallet balance required to request a cash-out (UGX cents/smallest unit). */
