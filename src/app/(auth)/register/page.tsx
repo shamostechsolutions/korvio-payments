@@ -12,30 +12,43 @@ function RegisterForm() {
   const searchParams = useSearchParams();
   const fromWhatsApp = searchParams.get("from") === "whatsapp";
   const createCampaign = searchParams.get("intent") === "create-campaign";
+  const presetEmail = searchParams.get("email") || "";
+  const redirectAfter = searchParams.get("redirect") || "";
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function onSubmit(formData: FormData) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     setLoading(true);
     setError("");
-    const res = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        fullName: formData.get("fullName"),
-        phoneNumber: formData.get("phoneNumber"),
-        email: formData.get("email"),
-        password: formData.get("password"),
-      }),
-    });
-    const data = await res.json();
-    setLoading(false);
-    if (!res.ok) {
-      setError(data.error || "Unable to register");
-      return;
+
+    const formData = new FormData(event.currentTarget);
+
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: formData.get("fullName"),
+          phoneNumber: formData.get("phoneNumber"),
+          email: formData.get("email"),
+          password: formData.get("password"),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Unable to register");
+        return;
+      }
+      router.push(
+        redirectAfter || (createCampaign ? "/dashboard/new" : "/dashboard"),
+      );
+      router.refresh();
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    router.push(createCampaign ? "/dashboard/new" : "/dashboard");
-    router.refresh();
   }
 
   return (
@@ -47,9 +60,11 @@ function RegisterForm() {
       <p className="mt-2 text-sm text-[var(--ink-soft)]">
         {fromWhatsApp
           ? "You came from WhatsApp. Register here, then we’ll take you straight to campaign setup."
-          : "Set up campaigns for weddings, medical drives, alumni funds and more."}
+          : redirectAfter === "/admininterface"
+            ? "Create your platform admin account, then you’ll be signed in automatically."
+            : "Set up campaigns for weddings, medical drives, alumni funds and more."}
       </p>
-      <form action={onSubmit} className="mt-6 space-y-4">
+      <form onSubmit={(e) => void handleSubmit(e)} className="mt-6 space-y-4">
         <div>
           <Label>Full name</Label>
           <Input name="fullName" required placeholder="Moses Etuku" />
@@ -60,7 +75,13 @@ function RegisterForm() {
         </div>
         <div>
           <Label>Email</Label>
-          <Input name="email" type="email" required placeholder="you@example.com" />
+          <Input
+            name="email"
+            type="email"
+            required
+            defaultValue={presetEmail}
+            placeholder="you@example.com"
+          />
         </div>
         <div>
           <Label>Password</Label>
@@ -73,17 +94,19 @@ function RegisterForm() {
           />
         </div>
         {error ? <p className="text-sm text-[var(--danger)]">{error}</p> : null}
-        <Button className="w-full" loading={loading}>
-          {createCampaign ? "Register and set up campaign" : "Create account"}
+        <Button type="submit" className="w-full" loading={loading}>
+          {loading ? "Creating account..." : createCampaign ? "Register and set up campaign" : "Create account"}
         </Button>
       </form>
       <p className="mt-4 text-sm text-[var(--ink-soft)]">
         Already have an account?{" "}
         <Link
           href={
-            createCampaign
-              ? "/login?redirect=/dashboard/new"
-              : "/login"
+            redirectAfter
+              ? `/admininterface/login`
+              : createCampaign
+                ? "/login?redirect=/dashboard/new"
+                : "/login"
           }
           className="font-semibold text-[var(--brand)]"
         >

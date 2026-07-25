@@ -1,8 +1,15 @@
+import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import { recalculateContributorAndCampaign } from "../src/lib/campaigns/totals";
 
-const prisma = new PrismaClient();
+/** Use direct/session URL for seed — transaction pooler (6543) breaks Prisma transactions. */
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DIRECT_URL || process.env.DATABASE_URL,
+    },
+  },
+});
 
 async function main() {
   const passwordHash = await bcrypt.hash("korvio123", 12);
@@ -137,28 +144,33 @@ async function main() {
           notes: "Seed payment",
         },
       });
+      await prisma.contributor.update({
+        where: { id: contributor.id },
+        data: {
+          paidAmount: person.paid,
+          pledgedAmount: person.pledge,
+          status: person.pledge > person.paid ? "PARTIALLY_PAID" : "FULLY_PAID",
+        },
+      });
+    } else if (person.pledge > 0) {
+      await prisma.contributor.update({
+        where: { id: contributor.id },
+        data: { pledgedAmount: person.pledge, status: "PLEDGED" },
+      });
     }
-
-    await recalculateContributorAndCampaign(contributor.id);
   }
 
-  await prisma.expense.create({
+  const totalReceived = people.reduce((sum, p) => sum + p.paid, 0);
+  const totalPledged = people.reduce((sum, p) => sum + p.pledge, 0);
+
+  await prisma.campaign.update({
+    where: { id: campaign.id },
     data: {
-      campaignId: campaign.id,
-      category: "Venue",
-      description: "Booking deposit",
-      supplier: "Garden Venue",
-      amount: 1_500_000,
-      paymentMethod: "BANK",
-      expenseDate: new Date("2026-07-01"),
-      approvalStatus: "APPROVED",
-      recordedById: treasurer.id,
-      approvedById: owner.id,
+      totalReceived,
+      totalPledged,
+      availableBalance: totalReceived,
     },
   });
-
-  const any = await prisma.contributor.findFirst({ where: { campaignId: campaign.id } });
-  if (any) await recalculateContributorAndCampaign(any.id);
 
   console.log("Seeded Korvio demo data");
   console.log("Organiser login: moses@korvio.app / korvio123");

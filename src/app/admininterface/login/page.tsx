@@ -13,25 +13,34 @@ export default function AdminLoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function onSubmit(formData: FormData) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     setLoading(true);
     setError("");
-    const res = await fetch("/api/auth/admin-login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: formData.get("email"),
-        password: formData.get("password"),
-      }),
-    });
-    const data = await res.json();
-    setLoading(false);
-    if (!res.ok) {
-      setError(data.error || "Unable to sign in");
-      return;
+
+    const formData = new FormData(event.currentTarget);
+
+    try {
+      const res = await fetch("/api/auth/admin-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.get("email"),
+          password: formData.get("password"),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Unable to sign in");
+        return;
+      }
+      router.push("/admininterface");
+      router.refresh();
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    router.push("/admininterface");
-    router.refresh();
   }
 
   return (
@@ -46,11 +55,10 @@ export default function AdminLoginPage() {
         </div>
         <h1 className="mt-3 text-2xl font-bold text-[var(--dash-ink)]">Korvio admin sign in</h1>
         <p className="mt-2 text-sm text-[var(--dash-muted)]">
-          For Korvio staff only — manage all campaigns, cash-outs and verifications. Campaign
-          organisers should use the regular login instead.
+          For Korvio staff only — manage all campaigns, cash-outs and verifications.
         </p>
 
-        <form action={onSubmit} className="mt-6 space-y-4">
+        <form onSubmit={(e) => void handleSubmit(e)} className="mt-6 space-y-4">
           <div>
             <Label>Admin email</Label>
             <Input
@@ -58,6 +66,7 @@ export default function AdminLoginPage() {
               type="email"
               required
               autoComplete="username"
+              defaultValue="shamos@korvio.com"
               placeholder="shamos@korvio.com"
             />
           </div>
@@ -72,12 +81,21 @@ export default function AdminLoginPage() {
             />
           </div>
           {error ? <p className="text-sm text-[var(--danger)]">{error}</p> : null}
-          <Button className="w-full" loading={loading}>
-            Sign in to admin
+          <Button type="submit" className="w-full" loading={loading}>
+            {loading ? "Signing in..." : "Sign in to admin"}
           </Button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-[var(--dash-muted)]">
+        <p className="mt-4 text-center text-xs text-[var(--dash-muted)]">
+          No account yet?{" "}
+          <Link
+            href="/register?email=shamos@korvio.com&redirect=/admininterface"
+            className="font-semibold text-teal-400"
+          >
+            Register shamos@korvio.com
+          </Link>
+        </p>
+        <p className="mt-3 text-center text-sm text-[var(--dash-muted)]">
           Running a campaign?{" "}
           <Link href="/login" className="font-semibold text-teal-400">
             Organiser login

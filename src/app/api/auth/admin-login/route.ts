@@ -17,8 +17,18 @@ export async function POST(request: Request) {
       where: { email: body.email.toLowerCase() },
     });
 
-    if (!user?.passwordHash || !(await verifyPassword(body.password, user.passwordHash))) {
-      return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
+    if (!user) {
+      return NextResponse.json(
+        {
+          error:
+            "No account found for this email. Register first using the link below, then sign in here.",
+        },
+        { status: 401 },
+      );
+    }
+
+    if (!user.passwordHash || !(await verifyPassword(body.password, user.passwordHash))) {
+      return NextResponse.json({ error: "Incorrect password." }, { status: 401 });
     }
 
     if (!isPlatformAdmin(user)) {

@@ -14,25 +14,34 @@ function LoginForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function onSubmit(formData: FormData) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     setLoading(true);
     setError("");
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: formData.get("email"),
-        password: formData.get("password"),
-      }),
-    });
-    const data = await res.json();
-    setLoading(false);
-    if (!res.ok) {
-      setError(data.error || "Unable to log in");
-      return;
+
+    const formData = new FormData(event.currentTarget);
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.get("email"),
+          password: formData.get("password"),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Unable to log in");
+        return;
+      }
+      router.push(redirect);
+      router.refresh();
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    router.push(redirect);
-    router.refresh();
   }
 
   return (
@@ -44,7 +53,7 @@ function LoginForm() {
       <p className="mt-2 text-sm text-[var(--ink-soft)]">
         Log in to manage your campaigns, payments, and collections.
       </p>
-      <form action={onSubmit} className="mt-6 space-y-4">
+      <form onSubmit={(e) => void handleSubmit(e)} className="mt-6 space-y-4">
         <div>
           <Label>Email</Label>
           <Input name="email" type="email" required placeholder="you@example.com" />
@@ -54,14 +63,14 @@ function LoginForm() {
           <Input name="password" type="password" required placeholder="••••••••" />
         </div>
         {error ? <p className="text-sm text-[var(--danger)]">{error}</p> : null}
-        <Button className="w-full" loading={loading}>
-          Sign in
+        <Button type="submit" className="w-full" loading={loading}>
+          {loading ? "Signing in..." : "Sign in"}
         </Button>
       </form>
       <p className="mt-4 text-sm text-[var(--ink-soft)]">
-        Campaign organiser?{" "}
-        <Link href="/login" className="font-semibold text-[var(--brand)]">
-          Organiser login
+        New to Korvio?{" "}
+        <Link href="/register" className="font-semibold text-[var(--brand)]">
+          Create an account
         </Link>
         {" · "}
         <Link href="/admininterface/login" className="font-semibold text-[var(--brand-soft)]">
