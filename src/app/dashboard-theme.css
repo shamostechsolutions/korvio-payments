@@ -1,19 +1,19 @@
 .dashboard-theme {
-  --dash-bg: #09090b;
+  --dash-bg: var(--bg);
   --dash-sidebar: #0c0c0e;
-  --dash-card: #141417;
+  --dash-card: var(--bg-elevated);
   --dash-card-hover: #1a1a1f;
-  --dash-border: #27272a;
-  --dash-ink: #fafafa;
-  --dash-muted: #a1a1aa;
-  --dash-brand: #14b8a6;
+  --dash-border: var(--line);
+  --dash-ink: var(--ink);
+  --dash-muted: var(--ink-soft);
+  --dash-brand: var(--brand);
   --dash-brand-dim: rgba(20, 184, 166, 0.12);
-  --dash-success: #22c55e;
-  --dash-warning: #f59e0b;
-  --dash-danger: #ef4444;
+  --dash-success: var(--success);
+  --dash-warning: var(--warning);
+  --dash-danger: var(--danger);
 
-  background: var(--dash-bg);
-  color: var(--dash-ink);
+  background: var(--bg);
+  color: var(--ink);
   min-height: 100vh;
 }
 
@@ -44,7 +44,7 @@
 }
 
 .dashboard-theme .dash-nav-item:hover {
-  background: var(--dash-card);
+  background: var(--dash-card-hover);
   color: var(--dash-ink);
 }
 
@@ -115,31 +115,6 @@
   color: white;
 }
 
-.dashboard-theme input,
-.dashboard-theme textarea,
-.dashboard-theme select {
-  background: var(--dash-bg) !important;
-  border-color: var(--dash-border) !important;
-  color: var(--dash-ink) !important;
-}
-
-.dashboard-theme input::placeholder,
-.dashboard-theme textarea::placeholder {
-  color: #71717a !important;
-}
-
-.dashboard-theme input:focus,
-.dashboard-theme textarea:focus,
-.dashboard-theme select:focus {
-  border-color: var(--dash-brand) !important;
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.2);
-}
-
-.dashboard-theme label {
-  color: var(--dash-muted);
-}
-
 .dashboard-theme .dash-table thead {
   border-bottom: 1px solid var(--dash-border);
   color: var(--dash-muted);
@@ -162,96 +137,4 @@
 
 .dashboard-theme .dash-table tbody tr:hover {
   background: var(--dash-bg);
-}
-
-.dashboard-theme .badge {
-  color: var(--dash-brand);
-  background: var(--dash-brand-dim);
-}
-
-.dashboard-theme .badge-success {
-  color: var(--dash-success);
-  background: rgba(34, 197, 94, 0.12);
-}
-
-.dashboard-theme .text-\[var\(--brand\)\],
-.dashboard-theme .text-\[var\(--brand-soft\)\] {
-  color: var(--dash-brand);
-}
-
-.dashboard-theme .text-\[var\(--ink-soft\)\] {
-  color: var(--dash-muted);
-}
-
-.dashboard-theme .text-\[var\(--ink\)\] {
-  color: var(--dash-ink);
-}
-
-.dashboard-theme .text-\[var\(--success\)\] {
-  color: var(--dash-success);
-}
-
-.dashboard-theme .text-\[var\(--danger\)\] {
-  color: var(--dash-danger);
-}
-
-.dashboard-theme .border-\[var\(--line\)\],
-.dashboard-theme .divide-\[var\(--line\)\] {
-  border-color: var(--dash-border);
-}
-
-.dashboard-theme .bg-\[var\(--bg\)\],
-.dashboard-theme .bg-\[var\(--accent-soft\)\] {
-  background: var(--dash-bg) !important;
-}
-
-.dashboard-theme .bg-white {
-  background: var(--dash-bg) !important;
-}
-
-.dashboard-theme .rounded-2xl.border.border-\[var\(--line\)\].bg-white {
-  background: var(--dash-bg) !important;
-  border-color: var(--dash-border) !important;
-}
-
-.dashboard-theme button.rounded-xl.font-semibold.bg-\[var\(--brand\)\] {
-  background: var(--dash-brand) !important;
-  color: #042f2e !important;
-}
-
-.dashboard-theme button.rounded-xl.font-semibold.border.border-\[var\(--line\)\].bg-white {
-  background: var(--dash-card) !important;
-  border-color: var(--dash-border) !important;
-  color: var(--dash-ink) !important;
-}
-
-.dashboard-theme button.rounded-xl.font-semibold.bg-\[var\(--danger\)\] {
-  background: var(--dash-danger) !important;
-  color: white !important;
-}
-
-.dashboard-theme button.rounded-xl.font-semibold.bg-transparent {
-  color: var(--dash-brand) !important;
-}
-
-.dashboard-theme .h-2\.5.rounded-full.bg-\[var\(--line\)\] {
-  background: var(--dash-border) !important;
-}
-
-.dashboard-theme a.text-teal-400,
-.dashboard-theme .text-emerald-400 {
-  color: #34d399;
-}
-
-.dashboard-theme .text-teal-400 {
-  color: #2dd4bf;
-}
-
-.dashboard-theme .font-\[family-name\:var\(--font-display\)\].text-\[var\(--brand\)\] {
-  color: var(--dash-ink);
-}
-
-.dashboard-theme .rounded-full.bg-\[var\(--accent-soft\)\] {
-  background: var(--dash-brand-dim) !important;
-  color: var(--dash-brand) !important;
 }

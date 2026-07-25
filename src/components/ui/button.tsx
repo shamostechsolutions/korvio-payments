@@ -20,11 +20,11 @@ export function Button({
         size === "md" && "px-4 py-2.5 text-sm",
         size === "lg" && "px-5 py-3 text-base",
         variant === "primary" &&
-          "bg-[var(--brand)] text-white shadow-sm hover:bg-[var(--brand-soft)]",
+          "bg-[var(--brand)] text-[#042f2e] shadow-sm hover:opacity-90",
         variant === "secondary" &&
-          "border border-[var(--line)] bg-white text-[var(--ink)] hover:bg-[var(--bg)]",
+          "border border-[var(--line)] bg-[var(--bg-elevated)] text-[var(--ink)] hover:bg-[var(--bg)]",
         variant === "ghost" &&
-          "bg-transparent text-[var(--brand)] hover:bg-white/70",
+          "bg-transparent text-[var(--brand-soft)] hover:bg-[var(--bg-elevated)]",
         variant === "danger" && "bg-[var(--danger)] text-white hover:opacity-90",
         className,
       )}

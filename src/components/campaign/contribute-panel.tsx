@@ -166,7 +166,7 @@ export function CampaignContributePanel({
             onClick={() => setMode("pay")}
             className={`rounded-lg py-2 text-sm font-semibold transition ${
               mode === "pay"
-                ? "bg-white text-[var(--brand)] shadow-sm"
+                ? "bg-[var(--bg-elevated)] text-[var(--brand)] shadow-sm"
                 : "text-[var(--ink-soft)]"
             }`}
           >
@@ -177,7 +177,7 @@ export function CampaignContributePanel({
             onClick={() => setMode("pledge")}
             className={`rounded-lg py-2 text-sm font-semibold transition ${
               mode === "pledge"
-                ? "bg-white text-[var(--brand)] shadow-sm"
+                ? "bg-[var(--bg-elevated)] text-[var(--brand)] shadow-sm"
                 : "text-[var(--ink-soft)]"
             }`}
           >
@@ -240,7 +240,7 @@ export function CampaignContributePanel({
               key={value}
               type="button"
               onClick={() => setAmount(String(value))}
-              className="rounded-full border border-[var(--line)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--ink-soft)] transition hover:border-[var(--brand-soft)] hover:text-[var(--brand)]"
+              className="rounded-full border border-[var(--line)] bg-[var(--bg-elevated)] px-3 py-1.5 text-xs font-semibold text-[var(--ink-soft)] transition hover:border-[var(--brand-soft)] hover:text-[var(--brand)]"
             >
               {formatQuickAmount(value)}
             </button>

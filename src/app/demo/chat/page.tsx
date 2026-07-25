@@ -126,7 +126,7 @@ export default function DemoChatPage() {
                   className={`max-w-[88%] rounded-2xl px-3 py-2 text-sm shadow-sm ${
                     message.from === "user"
                       ? "rounded-br-md bg-[#dcf8c6] text-[#111b21]"
-                      : "rounded-bl-md bg-white text-[#111b21]"
+                      : "rounded-bl-md bg-[var(--bg-elevated)] text-[var(--ink)]"
                   }`}
                 >
                   <p className="whitespace-pre-wrap">{message.body}</p>
@@ -145,7 +145,7 @@ export default function DemoChatPage() {
                               label: button.title,
                             })
                           }
-                          className="rounded-xl bg-[#f0f2f5] px-3 py-2 text-center text-sm font-semibold text-[#027eb5]"
+                          className="rounded-xl bg-[var(--bg)] px-3 py-2 text-center text-sm font-semibold text-[var(--brand-soft)]"
                         >
                           {button.title}
                         </button>
@@ -171,9 +171,9 @@ export default function DemoChatPage() {
                                 label: row.title,
                               })
                             }
-                            className="rounded-xl bg-[#f0f2f5] px-3 py-2 text-left"
+                            className="rounded-xl bg-[var(--bg)] px-3 py-2 text-left"
                           >
-                            <span className="block text-sm font-semibold text-[#027eb5]">
+                            <span className="block text-sm font-semibold text-[var(--brand-soft)]">
                               {row.title}
                             </span>
                             {row.description ? (
@@ -219,7 +219,6 @@ export default function DemoChatPage() {
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="Type a message..."
-              className="bg-white"
             />
             <Button disabled={loading || !text.trim()}>Send</Button>
           </form>

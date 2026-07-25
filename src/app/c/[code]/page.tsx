@@ -140,7 +140,7 @@ export default async function PublicCampaignPage({
               />
 
               {campaign.isVerified ? (
-                <div className="rounded-xl border border-[color-mix(in_srgb,var(--success)_25%,white)] bg-[color-mix(in_srgb,var(--success)_8%,white)] px-4 py-3 text-sm text-[var(--ink-soft)]">
+                <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-[var(--ink-soft)]">
                   <span className="font-semibold text-[var(--success)]">Verified beneficiary</span>
                   {" — "}
                   Our team checked this campaign before giving it the badge. We spoke to the

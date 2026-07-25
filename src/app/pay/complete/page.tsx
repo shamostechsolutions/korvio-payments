@@ -36,7 +36,7 @@ export default async function PayCompletePage({
         <div className="card p-8">
           {isSuccess && payment ? (
             <>
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--success)_12%,white)] text-3xl">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10 text-3xl text-emerald-400">
                 ✓
               </div>
               <h1 className="mt-4 text-2xl font-bold text-[var(--ink)]">Payment successful</h1>
@@ -47,7 +47,7 @@ export default async function PayCompletePage({
             </>
           ) : isFailed && payment ? (
             <>
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-50 text-3xl">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-500/10 text-3xl text-red-400">
                 ✕
               </div>
               <h1 className="mt-4 text-2xl font-bold text-[var(--ink)]">Payment not completed</h1>

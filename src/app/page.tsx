@@ -152,7 +152,7 @@ export default function HomePage() {
         </section>
 
         {/* How it works */}
-        <section id="how-it-works" className="scroll-mt-20 border-t border-[var(--line)] bg-white py-16 md:py-20">
+        <section id="how-it-works" className="scroll-mt-20 border-t border-[var(--line)] bg-[var(--bg-elevated)] py-16 md:py-20">
           <div className="mx-auto max-w-6xl px-4 md:px-8">
             <p className="text-sm font-semibold uppercase tracking-wider text-[var(--brand)]">
               How it works
@@ -198,7 +198,7 @@ export default function HomePage() {
         </section>
 
         {/* WhatsApp vs Korvio */}
-        <section className="border-t border-[var(--line)] bg-white py-16 md:py-20">
+        <section className="border-t border-[var(--line)] bg-[var(--bg-elevated)] py-16 md:py-20">
           <div className="mx-auto max-w-6xl px-4 md:px-8">
             <p className="text-sm font-semibold uppercase tracking-wider text-[var(--brand)]">
               Cultural fit
@@ -268,7 +268,7 @@ export default function HomePage() {
         </section>
 
         {/* Pricing */}
-        <section id="pricing" className="scroll-mt-20 border-t border-[var(--line)] bg-white py-16 md:py-20">
+        <section id="pricing" className="scroll-mt-20 border-t border-[var(--line)] bg-[var(--bg-elevated)] py-16 md:py-20">
           <div className="mx-auto max-w-6xl px-4 md:px-8">
             <p className="text-sm font-semibold uppercase tracking-wider text-[var(--brand)]">
               Pricing
@@ -372,7 +372,7 @@ export default function HomePage() {
         </section>
 
         {/* Categories */}
-        <section className="border-t border-[var(--line)] bg-white py-16 md:py-20">
+        <section className="border-t border-[var(--line)] bg-[var(--bg-elevated)] py-16 md:py-20">
           <div className="mx-auto max-w-6xl px-4 md:px-8">
             <p className="text-sm font-semibold uppercase tracking-wider text-[var(--brand)]">
               Categories
@@ -404,7 +404,7 @@ export default function HomePage() {
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <Link href="/register">
-                <Button size="lg" className="bg-white text-[var(--brand)] hover:bg-white/90">
+                <Button size="lg" className="bg-[var(--ink)] text-[var(--brand)] hover:opacity-90">
                   Start a campaign
                 </Button>
               </Link>

@@ -12,7 +12,7 @@ const LANDING_NAV = [
 
 export function PublicHeader({ showLandingNav = false }: { showLandingNav?: boolean }) {
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-white/90 backdrop-blur-md">
+    <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[var(--bg)]/90 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 md:px-8">
         <Link href="/" className="shrink-0">
           <Logo />
@@ -23,7 +23,7 @@ export function PublicHeader({ showLandingNav = false }: { showLandingNav?: bool
               <a
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-[var(--ink-soft)] transition hover:text-[var(--brand)]"
+                className="text-sm font-medium text-[var(--ink-soft)] transition hover:text-[var(--brand-soft)]"
               >
                 {link.label}
               </a>
@@ -47,20 +47,20 @@ export function PublicHeader({ showLandingNav = false }: { showLandingNav?: bool
 
 export function PublicFooter() {
   return (
-    <footer className="border-t border-[var(--line)] bg-white py-10">
+    <footer className="border-t border-[var(--line)] bg-[var(--bg-elevated)] py-10">
       <div className="mx-auto max-w-6xl px-4 md:px-8">
         <div className="flex flex-col items-center gap-6 md:flex-row md:justify-between">
           <Logo />
           <nav className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-[var(--ink-soft)]">
             {LANDING_NAV.map((link) => (
-              <a key={link.href} href={link.href} className="hover:text-[var(--brand)]">
+              <a key={link.href} href={link.href} className="hover:text-[var(--brand-soft)]">
                 {link.label}
               </a>
             ))}
-            <Link href="/login" className="hover:text-[var(--brand)]">
+            <Link href="/login" className="hover:text-[var(--brand-soft)]">
               Log in
             </Link>
-            <Link href="/register" className="hover:text-[var(--brand)]">
+            <Link href="/register" className="hover:text-[var(--brand-soft)]">
               Start a campaign
             </Link>
           </nav>

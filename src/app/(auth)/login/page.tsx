@@ -42,7 +42,7 @@ function LoginForm() {
         Welcome back
       </h1>
       <p className="mt-2 text-sm text-[var(--ink-soft)]">
-        Log in to manage campaigns, payments and WhatsApp updates.
+        Log in to manage campaigns, payments, and collections.
       </p>
       <form action={onSubmit} className="mt-6 space-y-4">
         <div>

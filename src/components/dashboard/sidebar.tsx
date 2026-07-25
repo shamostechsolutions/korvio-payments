@@ -57,7 +57,7 @@ export function DashboardSidebar({
   return (
     <aside className="dash-sidebar flex h-screen w-full shrink-0 flex-col md:w-[240px]">
       <div className="border-b border-[var(--dash-border)] px-4 py-5">
-        <Logo dark />
+        <Logo />
       </div>
 
       <div className="flex-1 overflow-y-auto px-3 py-4">
