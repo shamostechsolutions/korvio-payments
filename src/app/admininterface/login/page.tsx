@@ -55,7 +55,7 @@ export default function AdminLoginPage() {
         </div>
         <h1 className="mt-3 text-2xl font-bold text-[var(--dash-ink)]">Korvio admin sign in</h1>
         <p className="mt-2 text-sm text-[var(--dash-muted)]">
-          For Korvio staff only — manage all campaigns, cash-outs and verifications.
+          Korvio internal monitoring only — not for campaign organisers or the public.
         </p>
 
         <form onSubmit={(e) => void handleSubmit(e)} className="mt-6 space-y-4">
@@ -86,14 +86,8 @@ export default function AdminLoginPage() {
           </Button>
         </form>
 
-        <p className="mt-4 text-center text-xs text-[var(--dash-muted)]">
-          No account yet?{" "}
-          <Link
-            href="/register?email=shamos@korvio.com&redirect=/admininterface"
-            className="font-semibold text-teal-400"
-          >
-            Register shamos@korvio.com
-          </Link>
+        <p className="mt-6 text-center text-xs text-[var(--dash-muted)]">
+          Admin accounts are not created through public registration.
         </p>
         <p className="mt-3 text-center text-sm text-[var(--dash-muted)]">
           Running a campaign?{" "}

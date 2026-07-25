@@ -13,7 +13,6 @@ function RegisterForm() {
   const fromWhatsApp = searchParams.get("from") === "whatsapp";
   const createCampaign = searchParams.get("intent") === "create-campaign";
   const presetEmail = searchParams.get("email") || "";
-  const redirectAfter = searchParams.get("redirect") || "";
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -40,9 +39,7 @@ function RegisterForm() {
         setError(data.error || "Unable to register");
         return;
       }
-      router.push(
-        redirectAfter || (createCampaign ? "/dashboard/new" : "/dashboard"),
-      );
+      router.push(createCampaign ? "/dashboard/new" : "/dashboard");
       router.refresh();
     } catch {
       setError("Network error. Please try again.");
@@ -60,9 +57,7 @@ function RegisterForm() {
       <p className="mt-2 text-sm text-[var(--ink-soft)]">
         {fromWhatsApp
           ? "You came from WhatsApp. Register here, then we’ll take you straight to campaign setup."
-          : redirectAfter === "/admininterface"
-            ? "Create your platform admin account, then you’ll be signed in automatically."
-            : "Set up campaigns for weddings, medical drives, alumni funds and more."}
+          : "Set up campaigns for weddings, medical drives, alumni funds and more."}
       </p>
       <form onSubmit={(e) => void handleSubmit(e)} className="mt-6 space-y-4">
         <div>
@@ -101,13 +96,7 @@ function RegisterForm() {
       <p className="mt-4 text-sm text-[var(--ink-soft)]">
         Already have an account?{" "}
         <Link
-          href={
-            redirectAfter
-              ? `/admininterface/login`
-              : createCampaign
-                ? "/login?redirect=/dashboard/new"
-                : "/login"
-          }
+          href={createCampaign ? "/login?redirect=/dashboard/new" : "/login"}
           className="font-semibold text-[var(--brand)]"
         >
           Log in

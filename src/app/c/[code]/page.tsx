@@ -35,7 +35,7 @@ export default async function PublicCampaignPage({
     where: { campaignCode: code.toUpperCase() },
   });
 
-  if (!campaign || campaign.status === "CANCELLED") notFound();
+  if (!campaign || ["CANCELLED", "DRAFT"].includes(campaign.status)) notFound();
 
   const [contributors, publicUpdates] = await Promise.all([
     prisma.contributor.findMany({

@@ -11,32 +11,10 @@ const prisma = new PrismaClient({
   },
 });
 
+const DEMO_CAMPAIGN_CODES = ["MSW-2026"];
+
 async function main() {
   const passwordHash = await bcrypt.hash("korvio123", 12);
-
-  const owner = await prisma.user.upsert({
-    where: { email: "moses@korvio.app" },
-    update: {},
-    create: {
-      fullName: "Moses Etuku",
-      email: "moses@korvio.app",
-      phoneNumber: "256700000100",
-      passwordHash,
-      accountType: "ADMIN",
-    },
-  });
-
-  const treasurer = await prisma.user.upsert({
-    where: { email: "treasurer@korvio.app" },
-    update: {},
-    create: {
-      fullName: "Sarah Treasurer",
-      email: "treasurer@korvio.app",
-      phoneNumber: "256700000101",
-      passwordHash,
-      accountType: "ADMIN",
-    },
-  });
 
   await prisma.user.upsert({
     where: { email: "shamos@korvio.com" },
@@ -50,132 +28,14 @@ async function main() {
     },
   });
 
-  await prisma.campaign.deleteMany({ where: { campaignCode: "MSW-2026" } });
-
-  const campaign = await prisma.campaign.create({
-    data: {
-      campaignCode: "MSW-2026",
-      ownerId: owner.id,
-      name: "Moses & Sharon Wedding Contribution",
-      category: "WEDDING",
-      description:
-        "Help us celebrate and cover wedding costs with clear pledges, private payments and full accountability.",
-      currency: "UGX",
-      targetAmount: 20_000_000,
-      startDate: new Date("2026-06-01"),
-      deadline: new Date("2026-08-30"),
-      organiserName: "Moses Etuku",
-      organiserPhone: "256700000100",
-      beneficiaryName: "Moses & Sharon",
-      contactPerson: "Sarah Treasurer",
-      status: "ACTIVE",
-      allowPledges: true,
-      allowPartialPayments: true,
-      contributorListVisibility: "NAMES_AND_STATUSES",
-      contributionAmountVisibility: "PRIVATE",
-      paymentMethods: ["MTN_MOMO", "AIRTEL_MONEY", "CASH", "BANK", "DIRECT_TO_TREASURER"],
-      administrators: {
-        create: [
-          {
-            userId: owner.id,
-            role: "OWNER",
-            permissions: [],
-            status: "ACTIVE",
-            acceptedAt: new Date(),
-          },
-          {
-            userId: treasurer.id,
-            role: "TREASURER",
-            permissions: [],
-            status: "ACTIVE",
-            acceptedAt: new Date(),
-          },
-        ],
-      },
-    },
+  const removed = await prisma.campaign.deleteMany({
+    where: { campaignCode: { in: DEMO_CAMPAIGN_CODES } },
   });
 
-  const people = [
-    { name: "Moses", phone: "256700000201", pledge: 500_000, paid: 500_000 },
-    { name: "Emma", phone: "256700000202", pledge: 300_000, paid: 100_000 },
-    { name: "Peter", phone: "256700000203", pledge: 250_000, paid: 0 },
-    { name: "Sarah", phone: "256700000204", pledge: 200_000, paid: 200_000 },
-    { name: "John", phone: "256700000205", pledge: 0, paid: 0 },
-  ];
-
-  for (const person of people) {
-    const contributor = await prisma.contributor.create({
-      data: {
-        campaignId: campaign.id,
-        displayName: person.name,
-        phoneNumber: person.phone,
-        status: "JOINED",
-      },
-    });
-
-    if (person.pledge > 0) {
-      await prisma.pledge.create({
-        data: {
-          campaignId: campaign.id,
-          contributorId: contributor.id,
-          amount: person.pledge,
-          expectedPaymentDate: new Date("2026-08-15"),
-          status: "ACTIVE",
-        },
-      });
-    }
-
-    if (person.paid > 0) {
-      await prisma.payment.create({
-        data: {
-          campaignId: campaign.id,
-          contributorId: contributor.id,
-          transactionReference: `KRV-MSW-${person.phone.slice(-4)}`,
-          amount: person.paid,
-          currency: "UGX",
-          paymentMethod: "MTN_MOMO",
-          paymentProvider: "mock",
-          paymentStatus: "SUCCESSFUL",
-          providerFee: 0,
-          platformFee: 0,
-          netAmount: person.paid,
-          completedAt: new Date(),
-          manualPayment: true,
-          notes: "Seed payment",
-        },
-      });
-      await prisma.contributor.update({
-        where: { id: contributor.id },
-        data: {
-          paidAmount: person.paid,
-          pledgedAmount: person.pledge,
-          status: person.pledge > person.paid ? "PARTIALLY_PAID" : "FULLY_PAID",
-        },
-      });
-    } else if (person.pledge > 0) {
-      await prisma.contributor.update({
-        where: { id: contributor.id },
-        data: { pledgedAmount: person.pledge, status: "PLEDGED" },
-      });
-    }
+  console.log("Platform admin ready: shamos@korvio.com / korvio123");
+  if (removed.count > 0) {
+    console.log(`Removed ${removed.count} demo campaign(s): ${DEMO_CAMPAIGN_CODES.join(", ")}`);
   }
-
-  const totalReceived = people.reduce((sum, p) => sum + p.paid, 0);
-  const totalPledged = people.reduce((sum, p) => sum + p.pledge, 0);
-
-  await prisma.campaign.update({
-    where: { id: campaign.id },
-    data: {
-      totalReceived,
-      totalPledged,
-      availableBalance: totalReceived,
-    },
-  });
-
-  console.log("Seeded Korvio demo data");
-  console.log("Organiser login: moses@korvio.app / korvio123");
-  console.log("Platform admin login: shamos@korvio.com / korvio123");
-  console.log("Campaign code: MSW-2026");
 }
 
 main()

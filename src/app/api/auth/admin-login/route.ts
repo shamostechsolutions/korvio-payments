@@ -21,7 +21,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error:
-            "No account found for this email. Register first using the link below, then sign in here.",
+            "No platform admin account exists for this email. Admin accounts are created by Korvio only (seed or database setup).",
         },
         { status: 401 },
       );

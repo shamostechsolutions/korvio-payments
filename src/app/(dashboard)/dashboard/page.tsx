@@ -114,7 +114,7 @@ export default async function DashboardHomePage() {
                       </p>
                     </div>
                     <span className="rounded-full bg-teal-500/10 px-3 py-1 text-xs font-semibold text-teal-400">
-                      {campaign.status}
+                      {campaign.status === "DRAFT" ? "Pending approval" : campaign.status}
                     </span>
                   </div>
                   <div className="mt-4 grid gap-2 sm:grid-cols-3">

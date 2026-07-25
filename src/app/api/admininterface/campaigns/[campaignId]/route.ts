@@ -54,3 +54,40 @@ export async function PATCH(
     return NextResponse.json({ error: "Unable to update campaign" }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ campaignId: string }> },
+) {
+  try {
+    const admin = await requirePlatformAdmin();
+    const { campaignId } = await params;
+
+    const existing = await prisma.campaign.findUniqueOrThrow({ where: { id: campaignId } });
+
+    await prisma.campaign.update({
+      where: { id: campaignId },
+      data: { status: "CANCELLED" },
+    });
+
+    await writeAuditLog({
+      campaignId,
+      userId: admin.id,
+      action: "admin_campaign_deleted",
+      entityType: "campaign",
+      entityId: campaignId,
+      previousData: { status: existing.status, name: existing.name },
+      newData: { status: "CANCELLED" },
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    if (error instanceof Error && error.message === "UNAUTHORIZED") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (error instanceof Error && error.message === "FORBIDDEN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    return NextResponse.json({ error: "Unable to delete campaign" }, { status: 500 });
+  }
+}

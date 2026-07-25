@@ -93,8 +93,17 @@ export default async function CampaignOverviewPage({
     ).length,
   };
 
+  const isLive = campaign.status === "ACTIVE";
+
   return (
     <div className="space-y-6">
+      {!isLive ? (
+        <div className="rounded-xl border border-amber-500/25 bg-amber-500/10 px-4 py-3 text-sm text-[var(--dash-ink)]">
+          <span className="font-semibold text-amber-400">Pending approval</span>
+          {" — "}
+          Your campaign is not public yet. Korvio will review it before contributions can start.
+        </div>
+      ) : null}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-[var(--dash-ink)] md:text-3xl">
@@ -105,7 +114,11 @@ export default async function CampaignOverviewPage({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link href={`/c/${campaign.campaignCode}`} target="_blank" className="dash-btn-secondary">
+          <Link
+            href={`/c/${campaign.campaignCode}`}
+            target="_blank"
+            className={`dash-btn-secondary ${!isLive ? "pointer-events-none opacity-50" : ""}`}
+          >
             Preview page
           </Link>
           <Link href={`/dashboard/campaigns/${campaign.id}/wallet`} className="dash-btn-primary">
@@ -282,7 +295,11 @@ export default async function CampaignOverviewPage({
           </div>
         </section>
 
-        <ShareCampaignPanel publicUrl={publicUrl} campaignCode={campaign.campaignCode} />
+        <ShareCampaignPanel
+          publicUrl={publicUrl}
+          campaignCode={campaign.campaignCode}
+          isLive={isLive}
+        />
       </div>
     </div>
   );

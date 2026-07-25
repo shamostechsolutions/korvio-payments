@@ -13,6 +13,10 @@ export function getPlatformAdminEmails(): string[] {
     .filter(Boolean);
 }
 
+export function isPlatformAdminEmail(email: string): boolean {
+  return getPlatformAdminEmails().includes(email.trim().toLowerCase());
+}
+
 export function isPlatformAdmin(user: Pick<User, "email"> | null | undefined): boolean {
   if (!user?.email) return false;
   const allowed = getPlatformAdminEmails();

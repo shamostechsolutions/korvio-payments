@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { hashPassword } from "@/lib/auth/password";
+import { isPlatformAdminEmail } from "@/lib/auth/platform-admin";
 import { createSession } from "@/lib/auth/session";
 
 const schema = z.object({
@@ -16,8 +17,17 @@ export async function POST(request: Request) {
     const body = schema.parse(await request.json());
     const phoneNumber = body.phoneNumber.replace(/\D/g, "");
 
+    const email = body.email.toLowerCase();
+
+    if (isPlatformAdminEmail(email)) {
+      return NextResponse.json(
+        { error: "This email is reserved for platform administration and cannot be registered publicly." },
+        { status: 403 },
+      );
+    }
+
     const existing = await prisma.user.findFirst({
-      where: { OR: [{ email: body.email }, { phoneNumber }] },
+      where: { OR: [{ email }, { phoneNumber }] },
     });
     if (existing) {
       return NextResponse.json(
@@ -30,7 +40,7 @@ export async function POST(request: Request) {
       data: {
         fullName: body.fullName,
         phoneNumber,
-        email: body.email.toLowerCase(),
+        email,
         passwordHash: await hashPassword(body.password),
         accountType: "ADMIN",
       },

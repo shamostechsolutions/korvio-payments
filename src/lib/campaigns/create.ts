@@ -64,7 +64,7 @@ export async function createCampaign(input: CreateCampaignInput) {
         ? input.paymentMethods
         : ["MTN_MOMO", "AIRTEL_MONEY", "CASH", "DIRECT_TO_TREASURER"],
       reminderFrequencyDays: input.reminderFrequencyDays ?? 7,
-      status: "ACTIVE",
+      status: "DRAFT",
       administrators: {
         create: {
           userId: input.ownerId,
