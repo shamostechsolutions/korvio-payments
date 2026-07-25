@@ -27,10 +27,19 @@ type Props = {
   minimumPledgeAmount?: number | null;
   organiserName: string;
   organiserPhone: string;
+  compact?: boolean;
 };
+
+const QUICK_AMOUNTS = [20000, 50000, 100000, 200000];
 
 function storageKey(code: string) {
   return `korvio:contributor:${code.toUpperCase()}`;
+}
+
+function formatQuickAmount(amount: number) {
+  if (amount >= 1000000) return `${amount / 1000000}M`;
+  if (amount >= 1000) return `${amount / 1000}k`;
+  return String(amount);
 }
 
 export function CampaignContributePanel({
@@ -40,13 +49,14 @@ export function CampaignContributePanel({
   minimumPledgeAmount,
   organiserName,
   organiserPhone,
+  compact = false,
 }: Props) {
+  const [mode, setMode] = useState<"pay" | "pledge">("pay");
   const [stored, setStored] = useState<StoredContributor | null>(null);
   const [contributor, setContributor] = useState<ContributorSummary | null>(null);
   const [displayName, setDisplayName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [pledgeAmount, setPledgeAmount] = useState("");
-  const [payAmount, setPayAmount] = useState("");
+  const [amount, setAmount] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -70,92 +80,57 @@ export function CampaignContributePanel({
       `/api/public/campaigns/${campaignCode}/status?phone=${encodeURIComponent(phone)}`,
     );
     const data = await res.json();
-    if (data.joined) {
-      setContributor(data.contributor);
-    }
+    if (data.joined) setContributor(data.contributor);
   }
 
-  async function handleJoin(event: React.FormEvent) {
+  async function ensureJoined() {
+    if (stored) return stored.phoneNumber;
+    const res = await fetch(`/api/public/campaigns/${campaignCode}/join`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ displayName, phoneNumber }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Unable to join");
+    const saved = { displayName, phoneNumber: data.contributor.phoneNumber };
+    localStorage.setItem(storageKey(campaignCode), JSON.stringify(saved));
+    setStored(saved);
+    setContributor(data.contributor);
+    return saved.phoneNumber as string;
+  }
+
+  async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setLoading(true);
     setError(null);
     setMessage(null);
     try {
-      const res = await fetch(`/api/public/campaigns/${campaignCode}/join`, {
+      const phone = await ensureJoined();
+      const endpoint = mode === "pay" ? "pay" : "pledge";
+      const res = await fetch(`/api/public/campaigns/${campaignCode}/${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ displayName, phoneNumber }),
+        body: JSON.stringify({ phoneNumber: phone, amount }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Unable to join");
+      if (!res.ok) throw new Error(data.error || "Unable to complete");
 
-      const saved = { displayName, phoneNumber: data.contributor.phoneNumber };
-      localStorage.setItem(storageKey(campaignCode), JSON.stringify(saved));
-      setStored(saved);
-      setContributor(data.contributor);
-      setMessage("You have joined this campaign.");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to join");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handlePledge(event: React.FormEvent) {
-    event.preventDefault();
-    if (!stored) return;
-    setLoading(true);
-    setError(null);
-    setMessage(null);
-    try {
-      const res = await fetch(`/api/public/campaigns/${campaignCode}/pledge`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phoneNumber: stored.phoneNumber, amount: pledgeAmount }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Unable to pledge");
-      setContributor(data.contributor);
-      setPledgeAmount("");
-      setMessage("Pledge recorded.");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to pledge");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handlePay(event: React.FormEvent) {
-    event.preventDefault();
-    if (!stored) return;
-    setLoading(true);
-    setError(null);
-    setMessage(null);
-    try {
-      const res = await fetch(`/api/public/campaigns/${campaignCode}/pay`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phoneNumber: stored.phoneNumber, amount: payAmount }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Unable to pay");
-
-      if (data.type === "checkout" && data.checkoutUrl) {
+      if (mode === "pay" && data.type === "checkout" && data.checkoutUrl) {
         window.location.href = data.checkoutUrl;
         return;
       }
 
-      if (data.type === "direct") {
+      if (mode === "pay" && data.type === "direct") {
         setMessage(
-          `Pay ${data.amount.toLocaleString()} ${currency} directly to ${data.treasurerName} (${data.treasurerPhone}). The treasurer will record your payment.`,
+          `Send ${data.amount.toLocaleString()} ${currency} to ${data.treasurerName} · ${data.treasurerPhone}`,
         );
-        setPayAmount("");
-        return;
+      } else {
+        setContributor(data.contributor);
+        setMessage(mode === "pay" ? "Payment started." : "Pledge recorded. Thank you!");
       }
-
-      throw new Error("Unexpected payment response");
+      setAmount("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to pay");
+      setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -165,126 +140,130 @@ export function CampaignContributePanel({
     localStorage.removeItem(storageKey(campaignCode));
     setStored(null);
     setContributor(null);
-    setDisplayName("");
-    setPhoneNumber("");
     setMessage(null);
     setError(null);
   }
 
-  if (!stored) {
-    return (
-      <section className="surface rounded-3xl p-6 md:p-8">
-        <h2 className="font-[family-name:var(--font-display)] text-2xl font-bold text-[var(--brand)]">
-          Contribute
-        </h2>
-        <p className="mt-2 text-sm text-[var(--ink-soft)]">
-          Join this campaign to pledge or pay online. Your amount stays private.
-        </p>
-        <form onSubmit={handleJoin} className="mt-6 space-y-4">
-          <div>
-            <Label>Your name</Label>
-            <Input
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="e.g. Moses Etuku"
-              required
-            />
-          </div>
-          <div>
-            <Label>Phone number</Label>
-            <Input
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              placeholder="256700000000"
-              required
-            />
-          </div>
-          {error ? <p className="text-sm text-[var(--danger)]">{error}</p> : null}
-          <Button type="submit" size="lg" disabled={loading} className="w-full">
-            {loading ? "Joining..." : "Join campaign"}
-          </Button>
-        </form>
-      </section>
-    );
-  }
-
   return (
-    <section className="surface rounded-3xl p-6 md:p-8">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h2 className="font-[family-name:var(--font-display)] text-2xl font-bold text-[var(--brand)]">
-            Your contribution
-          </h2>
-          <p className="mt-1 text-sm text-[var(--ink-soft)]">
-            {stored.displayName} · {stored.phoneNumber}
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={handleSwitchAccount}
-          className="text-xs font-semibold text-[var(--brand)]"
-        >
-          Switch
-        </button>
+    <div className={`card ${compact ? "p-5" : "p-6 md:p-7"} lg:sticky lg:top-24`}>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-lg font-bold text-[var(--ink)]">Contribute</h2>
+        {stored ? (
+          <button
+            type="button"
+            onClick={handleSwitchAccount}
+            className="text-xs font-medium text-[var(--brand)]"
+          >
+            Switch
+          </button>
+        ) : null}
       </div>
 
-      {contributor ? (
-        <div className="mt-4 grid gap-2 rounded-2xl bg-[var(--accent-soft)]/40 p-4 text-sm">
-          <p>
-            Status:{" "}
-            <span className="font-semibold">
-              {publicStatusLabel(contributor.status as never)}
-            </span>
-          </p>
-          <p>Pledged: {contributor.pledged}</p>
-          <p>Paid: {contributor.paid}</p>
-          <p>Outstanding: {contributor.outstanding}</p>
+      {allowPledges ? (
+        <div className="mt-4 grid grid-cols-2 gap-1 rounded-xl bg-[var(--bg)] p-1">
+          <button
+            type="button"
+            onClick={() => setMode("pay")}
+            className={`rounded-lg py-2 text-sm font-semibold transition ${
+              mode === "pay"
+                ? "bg-white text-[var(--brand)] shadow-sm"
+                : "text-[var(--ink-soft)]"
+            }`}
+          >
+            Pay now
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("pledge")}
+            className={`rounded-lg py-2 text-sm font-semibold transition ${
+              mode === "pledge"
+                ? "bg-white text-[var(--brand)] shadow-sm"
+                : "text-[var(--ink-soft)]"
+            }`}
+          >
+            Pledge
+          </button>
         </div>
       ) : null}
 
-      {message ? <p className="mt-4 text-sm text-[var(--brand)]">{message}</p> : null}
-      {error ? <p className="mt-4 text-sm text-[var(--danger)]">{error}</p> : null}
-
-      {allowPledges ? (
-        <form onSubmit={handlePledge} className="mt-6 space-y-3 border-t border-[var(--line)] pt-6">
-          <h3 className="font-semibold text-[var(--ink)]">Make a pledge</h3>
-          <div>
-            <Label>Amount ({currency})</Label>
-            <Input
-              value={pledgeAmount}
-              onChange={(e) => setPledgeAmount(e.target.value)}
-              placeholder={minimumPledgeAmount ? `Min ${minimumPledgeAmount}` : "e.g. 50000 or 50k"}
-              required
-            />
-          </div>
-          <Button type="submit" variant="secondary" disabled={loading} className="w-full">
-            Record pledge
-          </Button>
-        </form>
+      {contributor ? (
+        <div className="mt-4 rounded-xl border border-[var(--line)] bg-[var(--bg)] px-4 py-3 text-sm">
+          <p className="font-medium text-[var(--ink)]">{stored?.displayName}</p>
+          <p className="mt-1 text-[var(--ink-soft)]">
+            {publicStatusLabel(contributor.status as never)} · Paid {contributor.paid}
+          </p>
+        </div>
       ) : null}
 
-      <form onSubmit={handlePay} className="mt-6 space-y-3 border-t border-[var(--line)] pt-6">
-        <h3 className="font-semibold text-[var(--ink)]">Pay now</h3>
-        <p className="text-sm text-[var(--ink-soft)]">
-          Pay online via Flutterwave, or follow treasurer instructions if direct payment is enabled.
-        </p>
+      <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+        {!stored ? (
+          <>
+            <div>
+              <Label>Your name</Label>
+              <Input
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="Full name"
+                required
+              />
+            </div>
+            <div>
+              <Label>Phone number</Label>
+              <Input
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="256700000000"
+                required
+              />
+            </div>
+          </>
+        ) : null}
+
         <div>
           <Label>Amount ({currency})</Label>
           <Input
-            value={payAmount}
-            onChange={(e) => setPayAmount(e.target.value)}
-            placeholder="e.g. 50000 or 50k"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder={
+              minimumPledgeAmount && mode === "pledge"
+                ? `Min ${minimumPledgeAmount.toLocaleString()}`
+                : "e.g. 50000 or 50k"
+            }
+            className="text-lg font-semibold"
             required
           />
         </div>
+
+        <div className="flex flex-wrap gap-2">
+          {QUICK_AMOUNTS.map((value) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setAmount(String(value))}
+              className="rounded-full border border-[var(--line)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--ink-soft)] transition hover:border-[var(--brand-soft)] hover:text-[var(--brand)]"
+            >
+              {formatQuickAmount(value)}
+            </button>
+          ))}
+        </div>
+
+        {error ? <p className="text-sm text-[var(--danger)]">{error}</p> : null}
+        {message ? <p className="text-sm text-[var(--success)]">{message}</p> : null}
+
         <Button type="submit" size="lg" disabled={loading} className="w-full">
-          {loading ? "Starting payment..." : "Pay now"}
+          {loading
+            ? "Please wait..."
+            : mode === "pay"
+              ? "Contribute now"
+              : "Record pledge"}
         </Button>
       </form>
 
-      <p className="mt-4 text-xs text-[var(--ink-soft)]">
-        Treasurer: {organiserName} · {organiserPhone}
+      <p className="mt-4 text-center text-xs leading-relaxed text-[var(--ink-soft)]">
+        Secure payment via Flutterwave · MTN & Airtel supported
+        <br />
+        Organiser: {organiserName}
       </p>
-    </section>
+    </div>
   );
 }

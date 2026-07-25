@@ -1,20 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #f3f6f4;
+  --bg: #f7f8fa;
   --bg-elevated: #ffffff;
-  --ink: #12241c;
-  --ink-soft: #3d5248;
-  --line: #d5e0da;
-  --brand: #0b3d32;
-  --brand-soft: #146355;
-  --accent: #c4a35a;
-  --accent-soft: #f3e7c8;
-  --success: #1f7a4d;
-  --warning: #b7791f;
-  --danger: #b42318;
-  --hero-glow: rgba(20, 99, 85, 0.18);
-  --pattern: rgba(11, 61, 50, 0.04);
+  --ink: #111827;
+  --ink-soft: #6b7280;
+  --line: #e5e7eb;
+  --brand: #0f766e;
+  --brand-soft: #14b8a6;
+  --accent: #f59e0b;
+  --accent-soft: #fef3c7;
+  --success: #059669;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 8px 24px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 4px 6px rgba(15, 23, 42, 0.04), 0 20px 40px rgba(15, 23, 42, 0.08);
 }
 
 @theme inline {
@@ -45,11 +45,8 @@ body {
 body {
   margin: 0;
   color: var(--ink);
-  background:
-    radial-gradient(1200px 500px at 10% -10%, var(--hero-glow), transparent 60%),
-    radial-gradient(900px 400px at 90% 0%, rgba(196, 163, 90, 0.16), transparent 55%),
-    linear-gradient(180deg, #eef4f1 0%, var(--bg) 40%, #f7faf8 100%);
-  font-family: var(--font-manrope), "Segoe UI", sans-serif;
+  background: var(--bg);
+  font-family: var(--font-manrope), system-ui, sans-serif;
 }
 
 a {
@@ -62,22 +59,48 @@ a {
   color: var(--brand);
 }
 
-.surface {
-  background: color-mix(in srgb, var(--bg-elevated) 92%, transparent);
+.card {
+  background: var(--bg-elevated);
   border: 1px solid var(--line);
-  backdrop-filter: blur(8px);
+  border-radius: 1rem;
+  box-shadow: var(--shadow);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 8%, white);
+  border-radius: 9999px;
+}
+
+.badge-success {
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 10%, white);
+}
+
+.hero-gradient {
+  background: linear-gradient(135deg, #0f766e 0%, #134e4a 50%, #115e59 100%);
+}
+
+.surface {
+  background: var(--bg-elevated);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
 }
 
 .brand-pattern {
-  background-image:
-    radial-gradient(circle at 1px 1px, var(--pattern) 1px, transparent 0);
-  background-size: 22px 22px;
+  background-image: radial-gradient(circle at 1px 1px, rgba(15, 118, 110, 0.04) 1px, transparent 0);
+  background-size: 24px 24px;
 }
 
 @keyframes rise-in {
   from {
     opacity: 0;
-    transform: translateY(18px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
@@ -85,25 +108,11 @@ a {
   }
 }
 
-@keyframes pulse-soft {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.03);
-  }
-}
-
 .animate-rise {
-  animation: rise-in 700ms ease both;
+  animation: rise-in 600ms ease both;
 }
 
 .animate-rise-delay {
-  animation: rise-in 900ms ease both;
-  animation-delay: 120ms;
-}
-
-.animate-pulse-soft {
-  animation: pulse-soft 4s ease-in-out infinite;
+  animation: rise-in 700ms ease both;
+  animation-delay: 80ms;
 }

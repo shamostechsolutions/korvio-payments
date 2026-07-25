@@ -15,9 +15,9 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Korvio — WhatsApp contribution management",
+  title: "Korvio — Collect money for your group",
   description:
-    "Your group talks on WhatsApp. Korvio handles the pledges, payments, reminders and accountability.",
+    "Share a campaign link. Members pledge and pay online. Built for weddings, medical bills, office collections and more.",
   applicationName: "Korvio",
   manifest: "/manifest.webmanifest",
 };

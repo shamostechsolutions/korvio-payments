@@ -133,7 +133,7 @@ export async function initiateWebPayment(input: {
     };
   }
 
-  const { payment, initiation } = await initiateContributorPayment({
+  const result = await initiateContributorPayment({
     campaignId: campaign.id,
     contributorId: contributor.id,
     amount: parsed,
@@ -141,14 +141,15 @@ export async function initiateWebPayment(input: {
     phoneNumber: contributor.phoneNumber,
   });
 
-  if (!initiation.checkoutUrl) {
+  const checkoutUrl = result.initiation?.checkoutUrl;
+  if (!checkoutUrl) {
     throw new Error("Unable to start online payment");
   }
 
   return {
     type: "checkout" as const,
-    checkoutUrl: initiation.checkoutUrl,
-    transactionReference: payment.transactionReference,
+    checkoutUrl,
+    transactionReference: result.payment.transactionReference,
     amount: parsed,
   };
 }
