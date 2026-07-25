@@ -24,6 +24,7 @@ export async function GET(
 const postSchema = z.object({
   payoutPhone: z.string().min(10).max(20),
   payoutMethod: z.enum(["MTN_MOMO", "AIRTEL_MONEY"]).optional(),
+  amount: z.number().int().positive().optional(),
 });
 
 export async function POST(
@@ -46,6 +47,7 @@ export async function POST(
       userId: user.id,
       payoutPhone: body.payoutPhone,
       payoutMethod: body.payoutMethod,
+      amount: body.amount,
     });
 
     return NextResponse.json({ cashout });

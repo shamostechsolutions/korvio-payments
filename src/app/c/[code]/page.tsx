@@ -13,6 +13,7 @@ import {
   isCampaignFundraisingComplete,
   isOpenFundraising,
 } from "@/lib/campaigns/fundraising";
+import { getPublicCampaignCashouts } from "@/lib/campaigns/cashout";
 import { daysRemaining, formatMoney } from "@/lib/utils/money";
 import { publicStatusLabel } from "@/lib/status";
 import { format } from "date-fns";
@@ -37,7 +38,7 @@ export default async function PublicCampaignPage({
 
   if (!campaign || ["CANCELLED", "DRAFT"].includes(campaign.status)) notFound();
 
-  const [contributors, publicUpdates] = await Promise.all([
+  const [contributors, publicUpdates, publicCashouts] = await Promise.all([
     prisma.contributor.findMany({
       where: { campaignId: campaign.id },
       orderBy: { paidAmount: "desc" },
@@ -47,6 +48,7 @@ export default async function PublicCampaignPage({
       orderBy: { publishedAt: "desc" },
       take: 10,
     }),
+    getPublicCampaignCashouts(campaign.id),
   ]);
 
   const appUrl =
@@ -206,6 +208,32 @@ export default async function PublicCampaignPage({
                 </div>
               </div>
             </section>
+
+            {publicCashouts.length ? (
+              <section className="card p-5 md:p-6">
+                <h2 className="text-lg font-bold text-[var(--ink)]">Withdrawals</h2>
+                <p className="mt-1 text-sm text-[var(--ink-soft)]">
+                  Processed payouts from this campaign wallet — visible for group transparency.
+                </p>
+                <ul className="mt-4 divide-y divide-[var(--line)]">
+                  {publicCashouts.map((w) => (
+                    <li key={w.id} className="flex items-center justify-between gap-3 py-3">
+                      <div>
+                        <p className="text-sm font-medium text-[var(--ink)]">
+                          Sent to organiser
+                        </p>
+                        <p className="text-xs text-[var(--ink-soft)]">
+                          {format(w.processedAt ?? w.requestedAt, "MMM d, yyyy")}
+                        </p>
+                      </div>
+                      <span className="text-sm font-semibold text-[var(--brand)]">
+                        {formatMoney(w.netAmount, campaign.currency)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
 
             {publicUpdates.length ? (
               <section className="card p-5 md:p-6">

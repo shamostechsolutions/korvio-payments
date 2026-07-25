@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/session";
 import { getCampaignAccess } from "@/lib/campaigns/access";
+import { canCloseCampaign } from "@/lib/campaigns/cashout-rules";
 import { getCampaignWallet } from "@/lib/campaigns/cashout";
 import { CampaignWalletPanel } from "@/components/dashboard/campaign-wallet-panel";
 import { DashPageHeader } from "@/components/dashboard/dash-page";
@@ -23,7 +24,7 @@ export default async function CampaignWalletPage({
     <div className="space-y-6">
       <DashPageHeader
         title="Wallet & cash-out"
-        description="Contributions land here as people pay. Request a cash-out when the campaign is closed."
+        description="Withdraw to mobile money in parts or all at once. Completed payouts appear on your public page."
       />
 
       <CampaignWalletPanel
@@ -31,8 +32,11 @@ export default async function CampaignWalletPage({
         currency={wallet.campaign.currency}
         organiserPhone={wallet.campaign.organiserPhone}
         campaignStatus={wallet.campaign.status}
+        fundraisingMode={wallet.campaign.fundraisingMode ?? "GOAL"}
         availableBalance={wallet.availableBalance}
+        minCashoutAmount={wallet.minCashoutAmount}
         canRequestCashout={wallet.canRequestCashout}
+        canCloseCampaign={access.has("campaign.close") && canCloseCampaign(wallet.campaign.status)}
         initialCashouts={wallet.cashouts.map((c) => ({
           id: c.id,
           amount: c.amount,

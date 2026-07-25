@@ -2,8 +2,25 @@ import type { CashoutStatus } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/audit";
 import { recalculateCampaignWallet } from "@/lib/campaigns/totals";
+import { formatMoney } from "@/lib/utils/money";
 
 const TERMINAL_STATUSES = new Set<CashoutStatus>(["COMPLETED", "FAILED", "CANCELLED"]);
+
+async function publishCashoutLedgerEntry(cashoutId: string) {
+  const cashout = await prisma.cashout.findUnique({
+    where: { id: cashoutId },
+    include: { campaign: { select: { id: true, organiserName: true, currency: true } } },
+  });
+  if (!cashout?.campaign) return;
+
+  await prisma.campaignPublicUpdate.create({
+    data: {
+      campaignId: cashout.campaign.id,
+      authorName: cashout.campaign.organiserName,
+      body: `Withdrawal processed: ${formatMoney(cashout.netAmount, cashout.campaign.currency)} sent to the organiser (${formatMoney(cashout.platformFee, cashout.campaign.currency)} Korvio service fee on ${formatMoney(cashout.amount, cashout.campaign.currency)}).`,
+    },
+  });
+}
 
 export async function updateCashoutStatus(input: {
   cashoutId: string;
@@ -30,6 +47,10 @@ export async function updateCashoutStatus(input: {
   });
 
   await recalculateCampaignWallet(cashout.campaignId);
+
+  if (input.status === "COMPLETED" && cashout.status !== "COMPLETED") {
+    await publishCashoutLedgerEntry(cashout.id);
+  }
 
   await writeAuditLog({
     campaignId: cashout.campaignId,

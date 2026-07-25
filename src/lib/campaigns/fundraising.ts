@@ -32,9 +32,6 @@ export function isCampaignFundraisingComplete(
   if (campaign.status === "COMPLETED" || campaign.status === "CLOSED") {
     return true;
   }
-  if (isOpenFundraising(campaign)) {
-    return false;
-  }
   const progress = campaignProgressPct(campaign);
   return progress !== null && progress >= 100;
 }

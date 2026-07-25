@@ -1,10 +1,13 @@
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/audit";
 import { recalculateCampaignWallet } from "@/lib/campaigns/totals";
+import {
+  MIN_CASHOUT_AMOUNT,
+  canCampaignRequestCashout,
+} from "@/lib/campaigns/cashout-rules";
 import { calculateCashoutNet } from "@/lib/payments/fees";
+import { formatMoney } from "@/lib/utils/money";
 import type { PaymentMethod } from "@prisma/client";
-
-const CASHOUT_ELIGIBLE_STATUSES = new Set(["COMPLETED", "CLOSED"]);
 
 export async function getCampaignWallet(campaignId: string) {
   const campaign = await prisma.campaign.findUniqueOrThrow({ where: { id: campaignId } });
@@ -27,11 +30,13 @@ export async function getCampaignWallet(campaignId: string) {
     totalFees: campaign.totalFees,
     pendingCashout,
     cashouts,
+    minCashoutAmount: MIN_CASHOUT_AMOUNT,
     cashoutPreview: { platformFee, netAmount },
-    canRequestCashout:
-      CASHOUT_ELIGIBLE_STATUSES.has(campaign.status) &&
-      campaign.availableBalance > 0 &&
-      !pendingCashout,
+    canRequestCashout: canCampaignRequestCashout({
+      status: campaign.status,
+      availableBalance: campaign.availableBalance,
+      hasPendingCashout: Boolean(pendingCashout),
+    }),
   };
 }
 
@@ -40,20 +45,40 @@ export async function requestCampaignCashout(input: {
   userId: string;
   payoutPhone: string;
   payoutMethod?: PaymentMethod;
+  amount?: number;
 }) {
   const wallet = await getCampaignWallet(input.campaignId);
 
-  if (!CASHOUT_ELIGIBLE_STATUSES.has(wallet.campaign.status)) {
-    throw new Error("Close or complete the campaign before requesting a cash-out");
-  }
-  if (wallet.availableBalance <= 0) {
-    throw new Error("No funds available to cash out");
-  }
-  if (wallet.pendingCashout) {
-    throw new Error("A cash-out request is already pending");
+  if (
+    !canCampaignRequestCashout({
+      status: wallet.campaign.status,
+      availableBalance: wallet.availableBalance,
+      hasPendingCashout: Boolean(wallet.pendingCashout),
+    })
+  ) {
+    if (wallet.pendingCashout) {
+      throw new Error("A cash-out request is already pending");
+    }
+    if (wallet.availableBalance < MIN_CASHOUT_AMOUNT) {
+      throw new Error(
+        `Minimum cash-out is ${formatMoney(MIN_CASHOUT_AMOUNT, wallet.campaign.currency)}`,
+      );
+    }
+    throw new Error("This campaign cannot request a cash-out right now");
   }
 
-  const amount = wallet.availableBalance;
+  const amount = input.amount ?? wallet.availableBalance;
+
+  if (amount <= 0 || amount > wallet.availableBalance) {
+    throw new Error("Invalid cash-out amount");
+  }
+
+  if (amount < MIN_CASHOUT_AMOUNT) {
+    throw new Error(
+      `Minimum cash-out is ${formatMoney(MIN_CASHOUT_AMOUNT, wallet.campaign.currency)}`,
+    );
+  }
+
   const { platformFee, netAmount } = calculateCashoutNet(amount);
 
   const cashout = await prisma.cashout.create({
@@ -63,7 +88,7 @@ export async function requestCampaignCashout(input: {
       amount,
       platformFee,
       netAmount,
-      payoutPhone: input.payoutPhone,
+      payoutPhone: input.payoutPhone.trim(),
       payoutMethod: input.payoutMethod ?? "MTN_MOMO",
       status: "PENDING",
     },
@@ -81,4 +106,19 @@ export async function requestCampaignCashout(input: {
   });
 
   return cashout;
+}
+
+export async function getPublicCampaignCashouts(campaignId: string) {
+  return prisma.cashout.findMany({
+    where: { campaignId, status: "COMPLETED" },
+    orderBy: { processedAt: "desc" },
+    select: {
+      id: true,
+      netAmount: true,
+      amount: true,
+      platformFee: true,
+      processedAt: true,
+      requestedAt: true,
+    },
+  });
 }
