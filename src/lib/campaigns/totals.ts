@@ -2,13 +2,9 @@ import { prisma } from "@/lib/db";
 import { deriveContributorStatus } from "@/lib/status";
 
 export async function recalculateCampaignWallet(campaignId: string) {
-  const [receivedAgg, expenseAgg, cashoutAgg, feeAgg] = await Promise.all([
+  const [receivedAgg, cashoutAgg, feeAgg] = await Promise.all([
     prisma.payment.aggregate({
       where: { campaignId, paymentStatus: "SUCCESSFUL" },
-      _sum: { amount: true },
-    }),
-    prisma.expense.aggregate({
-      where: { campaignId, approvalStatus: "APPROVED" },
       _sum: { amount: true },
     }),
     prisma.cashout.aggregate({
@@ -25,22 +21,21 @@ export async function recalculateCampaignWallet(campaignId: string) {
   ]);
 
   const totalReceived = receivedAgg._sum.amount ?? 0;
-  const totalExpenses = expenseAgg._sum.amount ?? 0;
   const reservedForCashouts = cashoutAgg._sum.amount ?? 0;
   const totalFees = feeAgg._sum.platformFee ?? 0;
-  const availableBalance = Math.max(0, totalReceived - totalExpenses - reservedForCashouts);
+  const availableBalance = Math.max(0, totalReceived - reservedForCashouts);
 
   await prisma.campaign.update({
     where: { id: campaignId },
     data: {
       totalReceived,
-      totalExpenses,
+      totalExpenses: 0,
       totalFees,
       availableBalance,
     },
   });
 
-  return { totalReceived, totalExpenses, totalFees, availableBalance };
+  return { totalReceived, totalFees, availableBalance };
 }
 
 export async function recalculateContributorAndCampaign(contributorId: string) {

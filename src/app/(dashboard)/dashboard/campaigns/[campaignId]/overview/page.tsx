@@ -104,7 +104,7 @@ export default async function CampaignOverviewPage({
         </div>
         <div className="flex flex-wrap gap-2">
           <Link href={`/c/${campaign.campaignCode}`} target="_blank" className="dash-btn-secondary">
-            Public page
+            Preview page
           </Link>
           <Link href={`/dashboard/campaigns/${campaign.id}/wallet`} className="dash-btn-primary">
             Wallet & cash-out
@@ -191,13 +191,13 @@ export default async function CampaignOverviewPage({
             </li>
             <li className="flex items-center gap-3">
               <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500/10 text-amber-400">
-                <Wallet className="h-4 w-4" />
+                <Target className="h-4 w-4" />
               </span>
               <div>
                 <p className="text-sm font-medium text-[var(--dash-ink)]">
-                  {formatMoney(campaign.totalExpenses, campaign.currency)} expenses
+                  {formatMoney(campaign.totalPledged, campaign.currency)} pledged
                 </p>
-                <p className="text-xs text-[var(--dash-muted)]">Approved spend</p>
+                <p className="text-xs text-[var(--dash-muted)]">{counts.pledged} active pledges</p>
               </div>
             </li>
           </ul>

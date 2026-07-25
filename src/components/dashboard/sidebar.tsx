@@ -3,18 +3,11 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  Activity,
-  BarChart3,
-  Bell,
   CreditCard,
   Globe,
   LayoutDashboard,
   LogOut,
-  Megaphone,
   Plus,
-  Receipt,
-  Settings,
-  Shield,
   Users,
   Wallet,
 } from "lucide-react";
@@ -26,14 +19,7 @@ const campaignLinks = [
   { href: "contributors", label: "Contributors", icon: Users },
   { href: "payments", label: "Payments", icon: CreditCard },
   { href: "wallet", label: "Wallet & cash-out", icon: Wallet },
-  { href: "expenses", label: "Expenses", icon: Receipt },
-  { href: "budget", label: "Budget", icon: BarChart3 },
-  { href: "updates", label: "Group updates", icon: Megaphone },
-  { href: "reminders", label: "Reminders", icon: Bell },
-  { href: "reports", label: "Reports", icon: BarChart3 },
-  { href: "admins", label: "Administrators", icon: Shield },
   { href: "settings", label: "Public page", icon: Globe },
-  { href: "activity", label: "Activity log", icon: Activity },
 ];
 
 export function DashboardSidebar({
@@ -67,20 +53,14 @@ export function DashboardSidebar({
         <nav className="space-y-0.5">
           <Link
             href="/dashboard"
-            className={cn(
-              "dash-nav-item",
-              pathname === "/dashboard" && "active",
-            )}
+            className={cn("dash-nav-item", pathname === "/dashboard" && "active")}
           >
             <LayoutDashboard className="h-4 w-4 shrink-0" />
             All campaigns
           </Link>
           <Link
             href="/dashboard/new"
-            className={cn(
-              "dash-nav-item",
-              pathname === "/dashboard/new" && "active",
-            )}
+            className={cn("dash-nav-item", pathname === "/dashboard/new" && "active")}
           >
             <Plus className="h-4 w-4 shrink-0" />
             New campaign
@@ -117,11 +97,7 @@ export function DashboardSidebar({
         {userName ? (
           <p className="mb-2 truncate px-3 text-xs text-[var(--dash-muted)]">{userName}</p>
         ) : null}
-        <button
-          type="button"
-          onClick={() => void logout()}
-          className="dash-nav-item w-full"
-        >
+        <button type="button" onClick={() => void logout()} className="dash-nav-item w-full">
           <LogOut className="h-4 w-4 shrink-0" />
           Log out
         </button>
