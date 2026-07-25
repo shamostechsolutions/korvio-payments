@@ -29,6 +29,11 @@ enum CampaignStatus {
   ARCHIVED
 }
 
+enum FundraisingMode {
+  GOAL
+  OPEN
+}
+
 enum CampaignCategory {
   WEDDING
   INTRODUCTION
@@ -260,7 +265,8 @@ model Campaign {
   category                    CampaignCategory
   description                 String
   currency                    String                     @default("UGX")
-  targetAmount                Int                        @map("target_amount")
+  fundraisingMode             FundraisingMode            @default(GOAL) @map("fundraising_mode")
+  targetAmount                Int                        @default(0) @map("target_amount")
   totalPledged                Int                        @default(0) @map("total_pledged")
   totalReceived               Int                        @default(0) @map("total_received")
   totalExpenses               Int                        @default(0) @map("total_expenses")

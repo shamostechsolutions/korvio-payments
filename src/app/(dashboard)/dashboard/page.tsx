@@ -3,6 +3,7 @@ import { getSessionUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
 import { DashStatCard } from "@/components/dashboard/dash-stat-card";
+import { isOpenFundraising } from "@/lib/campaigns/fundraising";
 import { formatMoney, daysRemaining } from "@/lib/utils/money";
 import { redirect } from "next/navigation";
 import { FolderKanban, Plus, TrendingUp, Wallet } from "lucide-react";
@@ -23,7 +24,9 @@ export default async function DashboardHomePage() {
 
   const totals = campaigns.reduce(
     (acc, c) => {
-      acc.target += c.targetAmount;
+      if (!isOpenFundraising(c)) {
+        acc.target += c.targetAmount;
+      }
       acc.received += c.totalReceived;
       acc.pledged += c.totalPledged;
       acc.wallet += c.availableBalance;
@@ -116,10 +119,21 @@ export default async function DashboardHomePage() {
                   </div>
                   <div className="mt-4 grid gap-2 sm:grid-cols-3">
                     <p className="text-sm text-[var(--dash-muted)]">
-                      Target{" "}
-                      <span className="font-semibold text-[var(--dash-ink)]">
-                        {formatMoney(campaign.targetAmount, campaign.currency)}
-                      </span>
+                      {isOpenFundraising(campaign) ? (
+                        <>
+                          Type{" "}
+                          <span className="font-semibold text-[var(--dash-ink)]">
+                            Open contributions
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          Target{" "}
+                          <span className="font-semibold text-[var(--dash-ink)]">
+                            {formatMoney(campaign.targetAmount, campaign.currency)}
+                          </span>
+                        </>
+                      )}
                     </p>
                     <p className="text-sm text-[var(--dash-muted)]">
                       Received{" "}

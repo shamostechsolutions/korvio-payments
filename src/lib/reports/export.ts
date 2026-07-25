@@ -1,5 +1,6 @@
 import ExcelJS from "exceljs";
 import type { Campaign, Contributor, Expense, Payment } from "@prisma/client";
+import { isOpenFundraising } from "@/lib/campaigns/fundraising";
 import { formatMoney } from "@/lib/utils/money";
 import { publicStatusLabel } from "@/lib/status";
 
@@ -17,7 +18,7 @@ export async function buildCampaignWorkbook(input: {
   summary.addRows([
     ["Campaign", input.campaign.name],
     ["Code", input.campaign.campaignCode],
-    ["Target", formatMoney(input.campaign.targetAmount, input.campaign.currency)],
+    ["Target", isOpenFundraising(input.campaign) ? "Open contributions" : formatMoney(input.campaign.targetAmount, input.campaign.currency)],
     ["Pledged", formatMoney(input.campaign.totalPledged, input.campaign.currency)],
     ["Received", formatMoney(input.campaign.totalReceived, input.campaign.currency)],
     ["Expenses", formatMoney(input.campaign.totalExpenses, input.campaign.currency)],

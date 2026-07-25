@@ -8,6 +8,11 @@ import { ShareButtons } from "@/components/campaign/share-buttons";
 import { SupportMessagesSection } from "@/components/campaign/support-messages";
 import { prisma } from "@/lib/db";
 import { categoryLabel } from "@/lib/campaigns/labels";
+import {
+  campaignProgressPct,
+  isCampaignFundraisingComplete,
+  isOpenFundraising,
+} from "@/lib/campaigns/fundraising";
 import { daysRemaining, formatMoney } from "@/lib/utils/money";
 import { publicStatusLabel } from "@/lib/status";
 import { format } from "date-fns";
@@ -50,10 +55,8 @@ export default async function PublicCampaignPage({
     "http://localhost:3000";
   const publicUrl = `${appUrl.replace(/\/$/, "")}/c/${campaign.campaignCode}`;
 
-  const progressPct =
-    campaign.targetAmount > 0
-      ? Math.round((campaign.totalReceived / campaign.targetAmount) * 100)
-      : 0;
+  const progressPct = campaignProgressPct(campaign);
+  const openMode = isOpenFundraising(campaign);
 
   const topSupporters = contributors
     .filter((c) => c.paidAmount > 0 && !c.anonymous && !c.hideFromList)
@@ -98,7 +101,7 @@ export default async function PublicCampaignPage({
             };
           });
 
-  const isComplete = campaign.status === "COMPLETED" || progressPct >= 100;
+  const isComplete = isCampaignFundraisingComplete(campaign);
 
   return (
     <div className="min-h-screen bg-[var(--bg)]">
@@ -109,9 +112,7 @@ export default async function PublicCampaignPage({
           className="h-48 w-full bg-cover bg-center md:h-64"
           style={{ backgroundImage: `url(${campaign.imageUrl})` }}
         />
-      ) : (
-        <div className="hero-gradient h-32 w-full md:h-40" />
-      )}
+      ) : null}
 
       <main className="mx-auto max-w-6xl px-4 pb-16 pt-8 md:px-8">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-10">
@@ -119,6 +120,9 @@ export default async function PublicCampaignPage({
             <section className="space-y-4">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="badge">{categoryLabel(campaign.category)}</span>
+                {openMode ? (
+                  <span className="badge">Open contributions</span>
+                ) : null}
                 {campaign.isVerified ? (
                   <span className="badge badge-success">Verified beneficiary</span>
                 ) : null}
@@ -156,17 +160,28 @@ export default async function PublicCampaignPage({
                       {formatMoney(campaign.totalReceived, campaign.currency)}
                     </p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm text-[var(--ink-soft)]">Goal</p>
-                    <p className="mt-1 text-lg font-semibold text-[var(--ink)]">
-                      {formatMoney(campaign.targetAmount, campaign.currency)}
-                    </p>
-                  </div>
+                  {!openMode ? (
+                    <div className="text-right">
+                      <p className="text-sm text-[var(--ink-soft)]">Goal</p>
+                      <p className="mt-1 text-lg font-semibold text-[var(--ink)]">
+                        {formatMoney(campaign.targetAmount, campaign.currency)}
+                      </p>
+                    </div>
+                  ) : null}
                 </div>
-                <ProgressBar value={progressPct} className="mt-4" />
-                <p className="mt-2 text-sm font-medium text-[var(--ink-soft)]">
-                  {progressPct}% funded · {contributors.length} contributors
-                </p>
+                {!openMode && progressPct !== null ? (
+                  <>
+                    <ProgressBar value={progressPct} className="mt-4" />
+                    <p className="mt-2 text-sm font-medium text-[var(--ink-soft)]">
+                      {progressPct}% funded · {contributors.length} contributors
+                    </p>
+                  </>
+                ) : (
+                  <p className="mt-4 text-sm font-medium text-[var(--ink-soft)]">
+                    {contributors.length} contributor{contributors.length === 1 ? "" : "s"} · Open
+                    contributions
+                  </p>
+                )}
               </div>
             </section>
 

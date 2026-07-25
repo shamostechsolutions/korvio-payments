@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { campaignProgressPct, isOpenFundraising } from "@/lib/campaigns/fundraising";
 import { daysRemaining, formatMoney } from "@/lib/utils/money";
 import { publicStatusLabel } from "@/lib/status";
 import { whatsappJoinLink } from "@/lib/utils/codes";
@@ -72,6 +73,9 @@ export async function GET(
     ).length,
   };
 
+  const openMode = isOpenFundraising(campaign);
+  const progressPct = campaignProgressPct(campaign);
+
   return NextResponse.json({
     campaign: {
       name: campaign.name,
@@ -79,7 +83,9 @@ export async function GET(
       description: campaign.description,
       category: campaign.category,
       currency: campaign.currency,
-      target: formatMoney(campaign.targetAmount, campaign.currency),
+      fundraisingMode: campaign.fundraisingMode,
+      target: openMode ? null : formatMoney(campaign.targetAmount, campaign.currency),
+      progressPct,
       pledged: formatMoney(campaign.totalPledged, campaign.currency),
       received: formatMoney(campaign.totalReceived, campaign.currency),
       outstanding: formatMoney(

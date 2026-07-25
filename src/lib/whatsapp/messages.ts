@@ -1,4 +1,5 @@
 import type { Campaign, Contributor } from "@prisma/client";
+import { isOpenFundraising } from "@/lib/campaigns/fundraising";
 import { daysRemaining, formatMoney } from "@/lib/utils/money";
 import { publicStatusLabel } from "@/lib/status";
 
@@ -17,7 +18,15 @@ export function campaignIntroMessage(campaign: Campaign) {
   lines.push(
     "",
     "📊 Campaign progress",
-    `🎯 Target: ${formatMoney(campaign.targetAmount, campaign.currency)}`,
+  );
+
+  if (!isOpenFundraising(campaign)) {
+    lines.push(`🎯 Target: ${formatMoney(campaign.targetAmount, campaign.currency)}`);
+  } else {
+    lines.push("🤝 Open contributions — give what you can");
+  }
+
+  lines.push(
     `🤝 Pledged: ${formatMoney(campaign.totalPledged, campaign.currency)}`,
     `✅ Received: ${formatMoney(campaign.totalReceived, campaign.currency)}`,
     `⏳ Outstanding: ${formatMoney(outstanding, campaign.currency)}`,

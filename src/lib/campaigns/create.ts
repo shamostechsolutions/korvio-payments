@@ -1,4 +1,4 @@
-import type { CampaignCategory, PaymentMethod, Prisma } from "@prisma/client";
+import type { CampaignCategory, FundraisingMode, PaymentMethod, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/audit";
 import { generateCampaignCode, whatsappJoinLink } from "@/lib/utils/codes";
@@ -9,6 +9,7 @@ export type CreateCampaignInput = {
   category: CampaignCategory;
   description: string;
   currency: string;
+  fundraisingMode?: FundraisingMode;
   targetAmount: number;
   startDate: Date;
   deadline: Date;
@@ -44,7 +45,8 @@ export async function createCampaign(input: CreateCampaignInput) {
       category: input.category,
       description: input.description,
       currency: input.currency,
-      targetAmount: input.targetAmount,
+      fundraisingMode: input.fundraisingMode ?? "GOAL",
+      targetAmount: input.fundraisingMode === "OPEN" ? 0 : input.targetAmount,
       startDate: input.startDate,
       deadline: input.deadline,
       imageUrl: input.imageUrl,

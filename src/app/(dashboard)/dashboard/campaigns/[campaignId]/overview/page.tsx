@@ -10,6 +10,10 @@ import {
 } from "lucide-react";
 import { getSessionUser } from "@/lib/auth/session";
 import { getCampaignAccess } from "@/lib/campaigns/access";
+import {
+  campaignProgressPct,
+  isOpenFundraising,
+} from "@/lib/campaigns/fundraising";
 import { prisma } from "@/lib/db";
 import { ContributionBars } from "@/components/dashboard/contribution-bars";
 import { DashStatCard } from "@/components/dashboard/dash-stat-card";
@@ -65,10 +69,8 @@ export default async function CampaignOverviewPage({
     }),
   ]);
 
-  const progressPct =
-    campaign.targetAmount > 0
-      ? Math.round((campaign.totalReceived / campaign.targetAmount) * 100)
-      : 0;
+  const openMode = isOpenFundraising(campaign);
+  const progressPct = campaignProgressPct(campaign);
 
   const cashoutPreview = calculateCashoutNet(campaign.availableBalance);
 
@@ -116,7 +118,11 @@ export default async function CampaignOverviewPage({
         <DashStatCard
           label="Received"
           value={formatMoney(campaign.totalReceived, campaign.currency)}
-          hint={`Target ${formatMoney(campaign.targetAmount, campaign.currency)}`}
+          hint={
+            openMode
+              ? "Open contributions"
+              : `Target ${formatMoney(campaign.targetAmount, campaign.currency)}`
+          }
           icon={TrendingUp}
           accent="success"
         />
@@ -148,21 +154,38 @@ export default async function CampaignOverviewPage({
               <h2 className="text-base font-semibold text-[var(--dash-ink)]">Overview</h2>
               <p className="text-sm text-[var(--dash-muted)]">Last 7 days of contributions</p>
             </div>
-            <span className="rounded-lg bg-[var(--dash-bg)] px-3 py-1.5 text-xs font-medium text-[var(--dash-muted)]">
-              {progressPct}% of goal
-            </span>
+            {!openMode && progressPct !== null ? (
+              <span className="rounded-lg bg-[var(--dash-bg)] px-3 py-1.5 text-xs font-medium text-[var(--dash-muted)]">
+                {progressPct}% of goal
+              </span>
+            ) : (
+              <span className="rounded-lg bg-[var(--dash-bg)] px-3 py-1.5 text-xs font-medium text-[var(--dash-muted)]">
+                Open contributions
+              </span>
+            )}
           </div>
-          <div className="mt-4">
-            <ProgressBar value={progressPct} />
-            <p className="mt-2 text-sm text-[var(--dash-muted)]">
-              {formatMoney(campaign.totalReceived, campaign.currency)} raised of{" "}
-              {formatMoney(campaign.targetAmount, campaign.currency)}
+          {!openMode && progressPct !== null ? (
+            <div className="mt-4">
+              <ProgressBar value={progressPct} />
+              <p className="mt-2 text-sm text-[var(--dash-muted)]">
+                {formatMoney(campaign.totalReceived, campaign.currency)} raised of{" "}
+                {formatMoney(campaign.targetAmount, campaign.currency)}
+              </p>
+            </div>
+          ) : (
+            <p className="mt-4 text-sm text-[var(--dash-muted)]">
+              {formatMoney(campaign.totalReceived, campaign.currency)} raised ·{" "}
+              {contributors.length} contributors
             </p>
-          </div>
+          )}
           <ContributionBars
             points={chartDays}
             currency={campaign.currency}
-            maxAmount={Math.max(...chartDays.map((d) => d.amount), campaign.targetAmount / 7)}
+            maxAmount={Math.max(
+              ...chartDays.map((d) => d.amount),
+              openMode ? 0 : campaign.targetAmount / 7,
+              1,
+            )}
           />
         </section>
 

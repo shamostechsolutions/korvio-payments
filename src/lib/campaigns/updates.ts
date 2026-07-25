@@ -1,6 +1,7 @@
 import type { Campaign, Contributor } from "@prisma/client";
 import { daysRemaining, formatMoney } from "@/lib/utils/money";
 import { publicStatusLabel } from "@/lib/status";
+import { isOpenFundraising } from "@/lib/campaigns/fundraising";
 import { whatsappJoinLink } from "@/lib/utils/codes";
 
 type UpdateInput = {
@@ -41,8 +42,10 @@ export function generateGroupUpdate({
     "",
     `🎉 ${campaign.name}`,
     "",
-    "🎯 Target",
-    formatMoney(campaign.targetAmount, campaign.currency),
+    isOpenFundraising(campaign) ? "🤝 Open contributions" : "🎯 Target",
+    isOpenFundraising(campaign)
+      ? "Give what you can"
+      : formatMoney(campaign.targetAmount, campaign.currency),
     "",
     "🤝 Pledged",
     formatMoney(campaign.totalPledged, campaign.currency),
@@ -126,7 +129,9 @@ export function generateShareMessage(campaign: Campaign): string {
   return [
     `🎉 ${campaign.name}`,
     "",
-    `🎯 Target: ${formatMoney(campaign.targetAmount, campaign.currency)}`,
+    isOpenFundraising(campaign)
+      ? "🤝 Open contributions — give what you can"
+      : `🎯 Target: ${formatMoney(campaign.targetAmount, campaign.currency)}`,
     `📅 Deadline: ${campaign.deadline.toLocaleDateString("en-GB", {
       day: "numeric",
       month: "long",

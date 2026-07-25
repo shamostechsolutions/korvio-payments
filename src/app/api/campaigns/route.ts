@@ -26,7 +26,8 @@ const createSchema = z.object({
   ]),
   description: z.string().min(10),
   currency: z.string().default("UGX"),
-  targetAmount: z.union([z.string(), z.number()]),
+  fundraisingMode: z.enum(["GOAL", "OPEN"]).optional(),
+  targetAmount: z.union([z.string(), z.number()]).optional(),
   startDate: z.string(),
   deadline: z.string(),
   organiserName: z.string().min(2),
@@ -75,9 +76,15 @@ export async function POST(request: Request) {
 
   try {
     const body = createSchema.parse(await request.json());
-    const targetAmount = parseMoneyInput(body.targetAmount);
-    if (!targetAmount) {
-      return NextResponse.json({ error: "Invalid target amount" }, { status: 400 });
+    const fundraisingMode = body.fundraisingMode ?? "GOAL";
+
+    let targetAmount = 0;
+    if (fundraisingMode === "GOAL") {
+      const parsed = parseMoneyInput(body.targetAmount ?? "");
+      if (!parsed) {
+        return NextResponse.json({ error: "Invalid target amount" }, { status: 400 });
+      }
+      targetAmount = parsed;
     }
 
     const result = await createCampaign({
@@ -86,6 +93,7 @@ export async function POST(request: Request) {
       category: body.category,
       description: body.description,
       currency: body.currency,
+      fundraisingMode,
       targetAmount,
       startDate: new Date(body.startDate),
       deadline: new Date(body.deadline),
