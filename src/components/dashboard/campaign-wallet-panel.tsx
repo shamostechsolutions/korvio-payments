@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import {
   PLATFORM_FEE_PERCENT_LABEL,
   calculateCashoutNet,
 } from "@/lib/payments/fees";
 import { formatMoney } from "@/lib/utils/money";
+import { DashBadge, DashCard, DashMessage } from "@/components/dashboard/dash-page";
 
 type Cashout = {
   id: string;
@@ -76,52 +76,49 @@ export function CampaignWalletPanel({
 
   return (
     <div className="space-y-6">
-      <section className="surface rounded-3xl p-6">
-        <h2 className="font-[family-name:var(--font-display)] text-xl font-700 text-[var(--brand)]">
-          Campaign wallet
-        </h2>
-        <p className="mt-2 text-sm text-[var(--ink-soft)]">
+      <DashCard>
+        <p className="text-sm text-[var(--dash-muted)]">
           Contributions land here as people pay. When the campaign is closed, request a cash-out to
           your mobile money. Korvio takes a {PLATFORM_FEE_PERCENT_LABEL} service fee at cash-out —
           contributors never pay extra at checkout.
         </p>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
-          <div className="rounded-2xl border border-[var(--line)] bg-white p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--ink-soft)]">
+          <div className="rounded-xl border border-[var(--dash-border)] bg-[var(--dash-bg)] p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--dash-muted)]">
               In wallet
             </p>
-            <p className="mt-2 text-2xl font-bold text-[var(--brand)]">
+            <p className="mt-2 text-2xl font-bold text-teal-400">
               {formatMoney(balance, currency)}
             </p>
           </div>
-          <div className="rounded-2xl border border-[var(--line)] bg-white p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--ink-soft)]">
+          <div className="rounded-xl border border-[var(--dash-border)] bg-[var(--dash-bg)] p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--dash-muted)]">
               Korvio fee ({PLATFORM_FEE_PERCENT_LABEL})
             </p>
-            <p className="mt-2 text-2xl font-bold text-[var(--ink)]">
+            <p className="mt-2 text-2xl font-bold text-[var(--dash-ink)]">
               {formatMoney(preview.platformFee, currency)}
             </p>
           </div>
-          <div className="rounded-2xl border border-[var(--line)] bg-white p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--ink-soft)]">
+          <div className="rounded-xl border border-[var(--dash-border)] bg-[var(--dash-bg)] p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--dash-muted)]">
               You receive
             </p>
-            <p className="mt-2 text-2xl font-bold text-[var(--success)]">
+            <p className="mt-2 text-2xl font-bold text-emerald-400">
               {formatMoney(preview.netAmount, currency)}
             </p>
           </div>
         </div>
 
         {needsClose ? (
-          <p className="mt-4 rounded-xl bg-[var(--accent-soft)] px-4 py-3 text-sm text-[var(--ink-soft)]">
-            Mark the campaign as <strong>completed</strong> or <strong>closed</strong> before you
-            can cash out.
+          <p className="mt-4 rounded-xl bg-[var(--dash-bg)] px-4 py-3 text-sm text-[var(--dash-muted)]">
+            Mark the campaign as <strong className="text-[var(--dash-ink)]">completed</strong> or{" "}
+            <strong className="text-[var(--dash-ink)]">closed</strong> before you can cash out.
           </p>
         ) : null}
 
         {canRequest && balance > 0 ? (
-          <div className="mt-6 space-y-4 border-t border-[var(--line)] pt-6">
+          <div className="mt-6 space-y-4 border-t border-[var(--dash-border)] pt-6">
             <div>
               <Label>Payout mobile money number</Label>
               <Input
@@ -130,36 +127,49 @@ export function CampaignWalletPanel({
                 placeholder="256700000000"
               />
             </div>
-            <Button type="button" onClick={() => void requestCashout()} disabled={loading}>
+            <button
+              type="button"
+              className="dash-btn-primary"
+              onClick={() => void requestCashout()}
+              disabled={loading}
+            >
               Request cash-out
-            </Button>
+            </button>
           </div>
         ) : null}
 
-        {message ? <p className="mt-4 text-sm text-[var(--success)]">{message}</p> : null}
-        {error ? <p className="mt-4 text-sm text-[var(--danger)]">{error}</p> : null}
-      </section>
+        {message ? (
+          <div className="mt-4">
+            <DashMessage type="success">{message}</DashMessage>
+          </div>
+        ) : null}
+        {error ? (
+          <div className="mt-4">
+            <DashMessage type="error">{error}</DashMessage>
+          </div>
+        ) : null}
+      </DashCard>
 
       {cashouts.length ? (
-        <section className="surface rounded-3xl p-6">
-          <h3 className="font-semibold text-[var(--ink)]">Cash-out history</h3>
-          <ul className="mt-4 divide-y divide-[var(--line)]">
+        <DashCard>
+          <h3 className="font-semibold text-[var(--dash-ink)]">Cash-out history</h3>
+          <ul className="mt-4 divide-y divide-[var(--dash-border)]">
             {cashouts.map((c) => (
               <li key={c.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
                 <div>
-                  <p className="font-medium text-[var(--ink)]">
+                  <p className="font-medium text-[var(--dash-ink)]">
                     {formatMoney(c.netAmount, currency)} to {c.payoutPhone}
                   </p>
-                  <p className="text-xs text-[var(--ink-soft)]">
+                  <p className="text-xs text-[var(--dash-muted)]">
                     {new Date(c.requestedAt).toLocaleString()} · Fee{" "}
                     {formatMoney(c.platformFee, currency)}
                   </p>
                 </div>
-                <span className="badge">{c.status.toLowerCase()}</span>
+                <DashBadge>{c.status.toLowerCase()}</DashBadge>
               </li>
             ))}
           </ul>
-        </section>
+        </DashCard>
       ) : null}
     </div>
   );

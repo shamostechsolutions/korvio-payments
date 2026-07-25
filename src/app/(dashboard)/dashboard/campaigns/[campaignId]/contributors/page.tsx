@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
-import { Button } from "@/components/ui/button";
+import { DashCard, DashMessage, DashPageHeader, DashTableWrap } from "@/components/dashboard/dash-page";
 import { Input, Label, Textarea } from "@/components/ui/input";
 import { publicStatusLabel } from "@/lib/status";
 
@@ -84,29 +84,28 @@ export default function ContributorsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="surface rounded-3xl p-6">
-        <h1 className="font-[family-name:var(--font-display)] text-3xl font-700 text-[var(--brand)]">
-          Contributors
-        </h1>
-        <p className="mt-2 text-[var(--ink-soft)]">
-          Add names now. Amounts stay private until people pledge or pay.
-        </p>
-        <div className="mt-4 flex flex-wrap gap-2">
+      <DashPageHeader
+        title="Contributors"
+        description="Add names now. Amounts stay private until people pledge or pay."
+      />
+
+      <DashCard>
+        <div className="flex flex-wrap gap-2">
           <Input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search name or phone"
             className="max-w-sm"
           />
-          <Button type="button" variant="secondary" onClick={() => void load(q)}>
+          <button type="button" className="dash-btn-secondary" onClick={() => void load(q)}>
             Search
-          </Button>
+          </button>
         </div>
-      </div>
+      </DashCard>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <form action={addContributor} className="surface space-y-3 rounded-3xl p-5">
-          <h2 className="font-semibold text-[var(--brand)]">Add contributor</h2>
+        <form action={addContributor} className="dash-card space-y-3 p-5">
+          <h2 className="font-semibold text-[var(--dash-ink)]">Add contributor</h2>
           <div>
             <Label>Full name</Label>
             <Input name="displayName" required />
@@ -123,63 +122,61 @@ export default function ContributorsPage() {
             <Label>Notes</Label>
             <Input name="notes" />
           </div>
-          <Button disabled={pending}>Add</Button>
+          <button type="submit" className="dash-btn-primary" disabled={pending}>
+            Add
+          </button>
         </form>
 
-        <form action={importList} className="surface space-y-3 rounded-3xl p-5">
-          <h2 className="font-semibold text-[var(--brand)]">Import list</h2>
-          <p className="text-sm text-[var(--ink-soft)]">
-            One name per line, or `Name, Phone`.
-          </p>
+        <form action={importList} className="dash-card space-y-3 p-5">
+          <h2 className="font-semibold text-[var(--dash-ink)]">Import list</h2>
+          <p className="text-sm text-[var(--dash-muted)]">One name per line, or `Name, Phone`.</p>
           <Textarea
             name="importText"
             rows={8}
             placeholder={"Moses\nEmma, 256700000001\nPeter, 256700000002"}
           />
-          <Button variant="secondary">Import</Button>
+          <button type="submit" className="dash-btn-secondary">
+            Import
+          </button>
         </form>
       </div>
 
-      {message ? <p className="text-sm text-[var(--brand-soft)]">{message}</p> : null}
+      {message ? <DashMessage type="success">{message}</DashMessage> : null}
 
-      <div className="surface overflow-x-auto rounded-3xl">
-        <table className="min-w-full text-left text-sm">
-          <thead className="border-b border-[var(--line)] text-[var(--ink-soft)]">
-            <tr>
-              <th className="px-4 py-3 font-medium">Name</th>
-              <th className="px-4 py-3 font-medium">Phone</th>
-              <th className="px-4 py-3 font-medium">Status</th>
+      <DashTableWrap>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Status</th>
+            {canViewAmounts ? (
+              <>
+                <th>Pledged</th>
+                <th>Paid</th>
+                <th>Outstanding</th>
+              </>
+            ) : null}
+            <th>Reminders</th>
+          </tr>
+        </thead>
+        <tbody>
+          {contributors.map((c) => (
+            <tr key={c.id}>
+              <td className="font-medium">{c.displayName}</td>
+              <td>{c.phoneNumber}</td>
+              <td>{publicStatusLabel(c.status as never)}</td>
               {canViewAmounts ? (
                 <>
-                  <th className="px-4 py-3 font-medium">Pledged</th>
-                  <th className="px-4 py-3 font-medium">Paid</th>
-                  <th className="px-4 py-3 font-medium">Outstanding</th>
+                  <td>{c.pledgedAmount ?? 0}</td>
+                  <td>{c.paidAmount ?? 0}</td>
+                  <td>{c.outstandingAmount ?? 0}</td>
                 </>
               ) : null}
-              <th className="px-4 py-3 font-medium">Reminders</th>
+              <td>{c.reminderCount}</td>
             </tr>
-          </thead>
-          <tbody>
-            {contributors.map((c) => (
-              <tr key={c.id} className="border-b border-[var(--line)] last:border-0">
-                <td className="px-4 py-3 font-medium">{c.displayName}</td>
-                <td className="px-4 py-3">{c.phoneNumber}</td>
-                <td className="px-4 py-3">
-                  {publicStatusLabel(c.status as never)}
-                </td>
-                {canViewAmounts ? (
-                  <>
-                    <td className="px-4 py-3">{c.pledgedAmount ?? 0}</td>
-                    <td className="px-4 py-3">{c.paidAmount ?? 0}</td>
-                    <td className="px-4 py-3">{c.outstandingAmount ?? 0}</td>
-                  </>
-                ) : null}
-                <td className="px-4 py-3">{c.reminderCount}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </DashTableWrap>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { DashCard, DashMessage } from "@/components/dashboard/dash-page";
 import { Input, Label, Textarea } from "@/components/ui/input";
 
 type Props = {
@@ -87,22 +87,20 @@ export function PublicPageSettings({
 
   return (
     <div className="space-y-6">
-      <section className="card p-6">
-        <h2 className="text-lg font-bold text-[var(--ink)]">Public campaign page</h2>
-        <p className="mt-1 text-sm text-[var(--ink-soft)]">
+      <DashCard>
+        <h2 className="text-lg font-bold text-[var(--dash-ink)]">Public campaign page</h2>
+        <p className="mt-1 text-sm text-[var(--dash-muted)]">
           Customise how your campaign appears at{" "}
-          <a href={publicUrl} target="_blank" rel="noreferrer" className="font-medium text-[var(--brand)]">
+          <a href={publicUrl} target="_blank" rel="noreferrer" className="font-medium text-teal-400">
             {publicUrl.replace(/^https?:\/\//, "")}
           </a>
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
-          <Button type="button" variant="secondary" size="sm" onClick={() => void copyLink()}>
+          <button type="button" className="dash-btn-secondary" onClick={() => void copyLink()}>
             Copy public link
-          </Button>
-          <a href={publicUrl} target="_blank" rel="noreferrer">
-            <Button type="button" variant="secondary" size="sm">
-              Preview page
-            </Button>
+          </button>
+          <a href={publicUrl} target="_blank" rel="noreferrer" className="dash-btn-primary">
+            Preview page
           </a>
         </div>
 
@@ -114,37 +112,42 @@ export function PublicPageSettings({
               onChange={(e) => setImageUrl(e.target.value)}
               placeholder="https://example.com/photo.jpg"
             />
-            <p className="mt-1 text-xs text-[var(--ink-soft)]">
+            <p className="mt-1 text-xs text-[var(--dash-muted)]">
               Paste a link to a photo (Google Drive, Cloudinary, etc.)
             </p>
           </div>
-          <label className="flex items-center gap-2 text-sm text-[var(--ink-soft)]">
+          <label className="flex items-center gap-2 text-sm text-[var(--dash-muted)]">
             <input
               type="checkbox"
               checked={isVerified}
               onChange={(e) => setIsVerified(e.target.checked)}
-              className="h-4 w-4"
+              className="h-4 w-4 accent-teal-500"
             />
             Show verified beneficiary badge
           </label>
-          <label className="flex items-center gap-2 text-sm text-[var(--ink-soft)]">
+          <label className="flex items-center gap-2 text-sm text-[var(--dash-muted)]">
             <input
               type="checkbox"
               checked={allowSupportMessages}
               onChange={(e) => setAllowSupportMessages(e.target.checked)}
-              className="h-4 w-4"
+              className="h-4 w-4 accent-teal-500"
             />
             Allow words of support on public page
           </label>
-          <Button type="button" onClick={() => void saveSettings()} disabled={loading}>
+          <button
+            type="button"
+            className="dash-btn-primary"
+            onClick={() => void saveSettings()}
+            disabled={loading}
+          >
             Save settings
-          </Button>
+          </button>
         </div>
-      </section>
+      </DashCard>
 
-      <section className="card p-6">
-        <h2 className="text-lg font-bold text-[var(--ink)]">Post an update</h2>
-        <p className="mt-1 text-sm text-[var(--ink-soft)]">
+      <DashCard>
+        <h2 className="text-lg font-bold text-[var(--dash-ink)]">Post an update</h2>
+        <p className="mt-1 text-sm text-[var(--dash-muted)]">
           Share progress with contributors — shown on your public campaign page.
         </p>
         <div className="mt-4 space-y-3">
@@ -154,26 +157,31 @@ export function PublicPageSettings({
             rows={4}
             placeholder="Thank you everyone for your support so far..."
           />
-          <Button type="button" onClick={() => void postUpdate()} disabled={loading || !updateBody.trim()}>
+          <button
+            type="button"
+            className="dash-btn-primary"
+            onClick={() => void postUpdate()}
+            disabled={loading || !updateBody.trim()}
+          >
             Publish update
-          </Button>
+          </button>
         </div>
         {updates.length ? (
-          <ul className="mt-6 space-y-3 border-t border-[var(--line)] pt-6">
+          <ul className="mt-6 space-y-3 border-t border-[var(--dash-border)] pt-6">
             {updates.map((u) => (
-              <li key={u.id} className="rounded-xl bg-[var(--bg)] p-4 text-sm">
-                <p className="font-medium text-[var(--ink)]">
+              <li key={u.id} className="rounded-xl bg-[var(--dash-bg)] p-4 text-sm">
+                <p className="font-medium text-[var(--dash-ink)]">
                   {u.authorName} · {new Date(u.publishedAt).toLocaleDateString()}
                 </p>
-                <p className="mt-2 whitespace-pre-wrap text-[var(--ink-soft)]">{u.body}</p>
+                <p className="mt-2 whitespace-pre-wrap text-[var(--dash-muted)]">{u.body}</p>
               </li>
             ))}
           </ul>
         ) : null}
-      </section>
+      </DashCard>
 
-      {message ? <p className="text-sm text-[var(--success)]">{message}</p> : null}
-      {error ? <p className="text-sm text-[var(--danger)]">{error}</p> : null}
+      {message ? <DashMessage type="success">{message}</DashMessage> : null}
+      {error ? <DashMessage type="error">{error}</DashMessage> : null}
     </div>
   );
 }

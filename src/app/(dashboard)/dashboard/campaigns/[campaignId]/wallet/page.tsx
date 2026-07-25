@@ -3,6 +3,7 @@ import { getSessionUser } from "@/lib/auth/session";
 import { getCampaignAccess } from "@/lib/campaigns/access";
 import { getCampaignWallet } from "@/lib/campaigns/cashout";
 import { CampaignWalletPanel } from "@/components/dashboard/campaign-wallet-panel";
+import { DashPageHeader } from "@/components/dashboard/dash-page";
 import { KorvioDisclaimer } from "@/components/legal/disclaimer";
 
 export default async function CampaignWalletPage({
@@ -20,6 +21,11 @@ export default async function CampaignWalletPage({
 
   return (
     <div className="space-y-6">
+      <DashPageHeader
+        title="Wallet & cash-out"
+        description="Contributions land here as people pay. Request a cash-out when the campaign is closed."
+      />
+
       <CampaignWalletPanel
         campaignId={access.campaign.id}
         currency={wallet.campaign.currency}
@@ -38,7 +44,7 @@ export default async function CampaignWalletPage({
           processedAt: c.processedAt?.toISOString() ?? null,
         }))}
       />
-      <KorvioDisclaimer className="max-w-3xl" />
+      <KorvioDisclaimer className="max-w-3xl text-[var(--dash-muted)]" />
     </div>
   );
 }

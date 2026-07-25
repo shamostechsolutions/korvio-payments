@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { DashMessage, DashPageHeader, DashTableWrap } from "@/components/dashboard/dash-page";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 
 type Expense = {
@@ -68,16 +68,12 @@ export default function ExpensesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="surface rounded-3xl p-6">
-        <h1 className="font-[family-name:var(--font-display)] text-3xl font-700 text-[var(--brand)]">
-          Expenses
-        </h1>
-        <p className="mt-2 text-[var(--ink-soft)]">
-          Keep available balance accurate by recording every campaign expense.
-        </p>
-      </div>
+      <DashPageHeader
+        title="Expenses"
+        description="Keep available balance accurate by recording every campaign expense."
+      />
 
-      <form action={onSubmit} className="surface grid gap-3 rounded-3xl p-5 md:grid-cols-2">
+      <form action={onSubmit} className="dash-card grid gap-3 p-5 md:grid-cols-2">
         <div>
           <Label>Category</Label>
           <Select name="category" defaultValue="Venue">
@@ -124,36 +120,36 @@ export default function ExpensesPage() {
           <Input name="notes" />
         </div>
         <div className="md:col-span-2">
-          <Button>Record expense</Button>
+          <button type="submit" className="dash-btn-primary">
+            Record expense
+          </button>
         </div>
       </form>
 
-      {message ? <p className="text-sm text-[var(--brand-soft)]">{message}</p> : null}
+      {message ? <DashMessage type="success">{message}</DashMessage> : null}
 
-      <div className="surface overflow-x-auto rounded-3xl">
-        <table className="min-w-full text-left text-sm">
-          <thead className="border-b border-[var(--line)] text-[var(--ink-soft)]">
-            <tr>
-              <th className="px-4 py-3">Date</th>
-              <th className="px-4 py-3">Category</th>
-              <th className="px-4 py-3">Description</th>
-              <th className="px-4 py-3">Amount</th>
-              <th className="px-4 py-3">Status</th>
+      <DashTableWrap>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {expenses.map((e) => (
+            <tr key={e.id}>
+              <td>{e.expenseDate.slice(0, 10)}</td>
+              <td>{e.category}</td>
+              <td>{e.description}</td>
+              <td className="text-amber-400">{e.amount}</td>
+              <td>{e.approvalStatus}</td>
             </tr>
-          </thead>
-          <tbody>
-            {expenses.map((e) => (
-              <tr key={e.id} className="border-b border-[var(--line)] last:border-0">
-                <td className="px-4 py-3">{e.expenseDate.slice(0, 10)}</td>
-                <td className="px-4 py-3">{e.category}</td>
-                <td className="px-4 py-3">{e.description}</td>
-                <td className="px-4 py-3">{e.amount}</td>
-                <td className="px-4 py-3">{e.approvalStatus}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </DashTableWrap>
     </div>
   );
 }

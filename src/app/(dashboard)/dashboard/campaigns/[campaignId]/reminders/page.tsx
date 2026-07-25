@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { DashCard, DashMessage, DashPageHeader } from "@/components/dashboard/dash-page";
 import { Label, Select } from "@/components/ui/input";
 
 export default function RemindersPage() {
@@ -30,16 +30,12 @@ export default function RemindersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="surface rounded-3xl p-6">
-        <h1 className="font-[family-name:var(--font-display)] text-3xl font-700 text-[var(--brand)]">
-          Reminders
-        </h1>
-        <p className="mt-2 text-[var(--ink-soft)]">
-          Reminders are private by default. The group is never named and shamed unless you deliberately enable public reminders.
-        </p>
-      </div>
+      <DashPageHeader
+        title="Reminders"
+        description="Send private payment reminders. Contributors are never named and shamed on the public page."
+      />
 
-      <div className="surface max-w-xl space-y-4 rounded-3xl p-5">
+      <DashCard className="max-w-xl space-y-4">
         <div>
           <Label>Who should receive reminders?</Label>
           <Select value={audience} onChange={(e) => setAudience(e.target.value)}>
@@ -49,11 +45,15 @@ export default function RemindersPage() {
             <option value="overdue">Promised date has passed</option>
           </Select>
         </div>
-        <Button onClick={() => void send()} variant={confirming ? "danger" : "primary"}>
+        <button
+          type="button"
+          onClick={() => void send()}
+          className={confirming ? "dash-btn-danger" : "dash-btn-primary"}
+        >
           {confirming ? "Yes, send reminders now" : "Prepare reminders"}
-        </Button>
-        {message ? <p className="text-sm text-[var(--brand-soft)]">{message}</p> : null}
-      </div>
+        </button>
+        {message ? <DashMessage type="success">{message}</DashMessage> : null}
+      </DashCard>
     </div>
   );
 }

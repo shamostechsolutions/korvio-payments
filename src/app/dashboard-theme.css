@@ -22,10 +22,13 @@
   border-right: 1px solid var(--dash-border);
 }
 
-.dashboard-theme .dash-card {
+.dashboard-theme .dash-card,
+.dashboard-theme .card,
+.dashboard-theme .surface {
   background: var(--dash-card);
   border: 1px solid var(--dash-border);
   border-radius: 1rem;
+  box-shadow: none;
 }
 
 .dashboard-theme .dash-nav-item {
@@ -99,20 +102,80 @@
   background: var(--dash-card-hover);
 }
 
-.dashboard-theme .dash-input {
-  background: var(--dash-bg);
-  border: 1px solid var(--dash-border);
-  color: var(--dash-ink);
+.dashboard-theme .dash-btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   border-radius: 0.75rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: var(--dash-danger);
+  color: white;
 }
 
-.dashboard-theme .surface {
-  background: var(--dash-card);
-  border: 1px solid var(--dash-border);
-  box-shadow: none;
+.dashboard-theme input,
+.dashboard-theme textarea,
+.dashboard-theme select {
+  background: var(--dash-bg) !important;
+  border-color: var(--dash-border) !important;
+  color: var(--dash-ink) !important;
 }
 
-.dashboard-theme .text-\[var\(--brand\)\] {
+.dashboard-theme input::placeholder,
+.dashboard-theme textarea::placeholder {
+  color: #71717a !important;
+}
+
+.dashboard-theme input:focus,
+.dashboard-theme textarea:focus,
+.dashboard-theme select:focus {
+  border-color: var(--dash-brand) !important;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.2);
+}
+
+.dashboard-theme label {
+  color: var(--dash-muted);
+}
+
+.dashboard-theme .dash-table thead {
+  border-bottom: 1px solid var(--dash-border);
+  color: var(--dash-muted);
+}
+
+.dashboard-theme .dash-table th {
+  padding: 0.75rem 1rem;
+  font-weight: 500;
+}
+
+.dashboard-theme .dash-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--dash-border);
+  color: var(--dash-ink);
+}
+
+.dashboard-theme .dash-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.dashboard-theme .dash-table tbody tr:hover {
+  background: var(--dash-bg);
+}
+
+.dashboard-theme .badge {
+  color: var(--dash-brand);
+  background: var(--dash-brand-dim);
+}
+
+.dashboard-theme .badge-success {
+  color: var(--dash-success);
+  background: rgba(34, 197, 94, 0.12);
+}
+
+.dashboard-theme .text-\[var\(--brand\)\],
+.dashboard-theme .text-\[var\(--brand-soft\)\] {
   color: var(--dash-brand);
 }
 
@@ -124,7 +187,71 @@
   color: var(--dash-ink);
 }
 
-.dashboard-theme .h-2\.5.rounded-full.bg-\[var\(--line\)\],
-.dashboard-theme [class*="bg-[var(--line)]"] {
+.dashboard-theme .text-\[var\(--success\)\] {
+  color: var(--dash-success);
+}
+
+.dashboard-theme .text-\[var\(--danger\)\] {
+  color: var(--dash-danger);
+}
+
+.dashboard-theme .border-\[var\(--line\)\],
+.dashboard-theme .divide-\[var\(--line\)\] {
+  border-color: var(--dash-border);
+}
+
+.dashboard-theme .bg-\[var\(--bg\)\],
+.dashboard-theme .bg-\[var\(--accent-soft\)\] {
+  background: var(--dash-bg) !important;
+}
+
+.dashboard-theme .bg-white {
+  background: var(--dash-bg) !important;
+}
+
+.dashboard-theme .rounded-2xl.border.border-\[var\(--line\)\].bg-white {
+  background: var(--dash-bg) !important;
+  border-color: var(--dash-border) !important;
+}
+
+.dashboard-theme button.rounded-xl.font-semibold.bg-\[var\(--brand\)\] {
+  background: var(--dash-brand) !important;
+  color: #042f2e !important;
+}
+
+.dashboard-theme button.rounded-xl.font-semibold.border.border-\[var\(--line\)\].bg-white {
+  background: var(--dash-card) !important;
+  border-color: var(--dash-border) !important;
+  color: var(--dash-ink) !important;
+}
+
+.dashboard-theme button.rounded-xl.font-semibold.bg-\[var\(--danger\)\] {
+  background: var(--dash-danger) !important;
+  color: white !important;
+}
+
+.dashboard-theme button.rounded-xl.font-semibold.bg-transparent {
+  color: var(--dash-brand) !important;
+}
+
+.dashboard-theme .h-2\.5.rounded-full.bg-\[var\(--line\)\] {
   background: var(--dash-border) !important;
+}
+
+.dashboard-theme a.text-teal-400,
+.dashboard-theme .text-emerald-400 {
+  color: #34d399;
+}
+
+.dashboard-theme .text-teal-400 {
+  color: #2dd4bf;
+}
+
+.dashboard-theme .font-\[family-name\:var\(--font-display\)\].text-\[var\(--brand\)\] {
+  color: var(--dash-ink);
+}
+
+.dashboard-theme .rounded-full.bg-\[var\(--accent-soft\)\] {
+  background: var(--dash-brand-dim) !important;
+  color: var(--dash-brand) !important;
 }

@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/session";
 import { getCampaignAccess } from "@/lib/campaigns/access";
 import { prisma } from "@/lib/db";
+import { DashCard, DashPageHeader } from "@/components/dashboard/dash-page";
 
 export default async function ActivityPage({
   params,
@@ -26,32 +27,28 @@ export default async function ActivityPage({
 
   return (
     <div className="space-y-6">
-      <div className="surface rounded-3xl p-6">
-        <h1 className="font-[family-name:var(--font-display)] text-3xl font-700 text-[var(--brand)]">
-          Activity log
-        </h1>
-        <p className="mt-2 text-[var(--ink-soft)]">
-          Every important financial and administrative action is recorded.
-        </p>
-      </div>
+      <DashPageHeader
+        title="Activity log"
+        description="Every important financial and administrative action is recorded."
+      />
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         {logs.map((log) => (
-          <article key={log.id} className="surface rounded-2xl p-4">
+          <DashCard key={log.id} className="p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="font-medium text-[var(--brand)]">{log.action.replaceAll("_", " ")}</p>
-              <p className="text-xs text-[var(--ink-soft)]">
-                {log.createdAt.toLocaleString()}
+              <p className="font-medium capitalize text-teal-400">
+                {log.action.replaceAll("_", " ")}
               </p>
+              <p className="text-xs text-[var(--dash-muted)]">{log.createdAt.toLocaleString()}</p>
             </div>
-            <p className="mt-1 text-sm text-[var(--ink-soft)]">
+            <p className="mt-1 text-sm text-[var(--dash-muted)]">
               {log.user?.fullName || "System"} · {log.entityType}
               {log.entityId ? ` · ${log.entityId}` : ""}
             </p>
-          </article>
+          </DashCard>
         ))}
         {logs.length === 0 ? (
-          <p className="text-sm text-[var(--ink-soft)]">No activity yet.</p>
+          <p className="text-sm text-[var(--dash-muted)]">No activity yet.</p>
         ) : null}
       </div>
     </div>

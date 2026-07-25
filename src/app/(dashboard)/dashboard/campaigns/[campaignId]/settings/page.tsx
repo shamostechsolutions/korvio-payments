@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { PublicPageSettings } from "@/components/dashboard/public-page-settings";
+import { DashCard, DashPageHeader } from "@/components/dashboard/dash-page";
 import { getSessionUser } from "@/lib/auth/session";
 import { getCampaignAccess } from "@/lib/campaigns/access";
 
@@ -23,12 +24,10 @@ export default async function SettingsPage({
 
   return (
     <div className="space-y-6">
-      <div className="card p-6">
-        <h1 className="text-2xl font-bold text-[var(--ink)]">Public page & settings</h1>
-        <p className="mt-2 text-sm text-[var(--ink-soft)]">
-          Customise your campaign page, post updates, and manage trust badges.
-        </p>
-      </div>
+      <DashPageHeader
+        title="Public page"
+        description="Customise your campaign page, post updates, and manage trust badges."
+      />
 
       {access.role === "OWNER" ? (
         <PublicPageSettings
@@ -40,9 +39,11 @@ export default async function SettingsPage({
           organiserName={c.organiserName}
         />
       ) : (
-        <p className="text-sm text-[var(--ink-soft)]">
-          Only the campaign owner can edit public page settings.
-        </p>
+        <DashCard>
+          <p className="text-sm text-[var(--dash-muted)]">
+            Only the campaign owner can edit public page settings.
+          </p>
+        </DashCard>
       )}
     </div>
   );

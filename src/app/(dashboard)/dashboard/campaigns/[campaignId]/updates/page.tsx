@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { DashCard, DashMessage, DashPageHeader } from "@/components/dashboard/dash-page";
 
 export default function UpdatesPage() {
   const params = useParams<{ campaignId: string }>();
@@ -33,13 +34,13 @@ export default function UpdatesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="dash-card p-6">
-        <h1 className="text-2xl font-bold text-[var(--dash-ink)]">Group updates</h1>
-        <p className="mt-2 text-sm text-[var(--dash-muted)]">
-          Generate a progress update you can copy and share with your group. Individual amounts
-          stay private.
-        </p>
-        <div className="mt-4 flex flex-wrap gap-2">
+      <DashPageHeader
+        title="Group updates"
+        description="Generate a progress update you can copy and share with your group. Individual amounts stay private."
+      />
+
+      <DashCard>
+        <div className="flex flex-wrap gap-2">
           <button type="button" onClick={() => void load(true)} className="dash-btn-primary">
             Generate with list
           </button>
@@ -47,9 +48,9 @@ export default function UpdatesPage() {
             Totals only
           </button>
         </div>
-      </div>
+      </DashCard>
 
-      <section className="dash-card p-5">
+      <DashCard>
         <div className="flex items-center justify-between gap-3">
           <h2 className="font-semibold text-[var(--dash-ink)]">Group update</h2>
           <button
@@ -63,9 +64,9 @@ export default function UpdatesPage() {
         <pre className="mt-4 whitespace-pre-wrap rounded-xl bg-[var(--dash-bg)] p-4 text-sm text-[var(--dash-ink)]">
           {update || "Generating..."}
         </pre>
-      </section>
+      </DashCard>
 
-      <section className="dash-card p-5">
+      <DashCard>
         <div className="flex items-center justify-between gap-3">
           <h2 className="font-semibold text-[var(--dash-ink)]">Shareable invite</h2>
           <button
@@ -79,7 +80,7 @@ export default function UpdatesPage() {
         <pre className="mt-4 whitespace-pre-wrap rounded-xl bg-[var(--dash-bg)] p-4 text-sm text-[var(--dash-muted)]">
           {shareMessage}
         </pre>
-      </section>
+      </DashCard>
     </div>
   );
 }

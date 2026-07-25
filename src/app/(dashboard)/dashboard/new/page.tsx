@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
-import { Button } from "@/components/ui/button";
+import { DashPageHeader } from "@/components/dashboard/dash-page";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 
 const categories = [
@@ -73,13 +73,10 @@ export default function NewCampaignPage() {
       <DashboardSidebar />
       <main className="min-w-0 flex-1 overflow-auto p-4 md:p-6 lg:p-8">
         <div className="dash-card p-6 md:p-8">
-        <h1 className="text-2xl font-bold text-[var(--dash-ink)] md:text-3xl">
-          Create a campaign
-        </h1>
-        <p className="mt-2 text-sm text-[var(--dash-muted)]">
-          Set the target, privacy rules and payment options. Korvio will generate a public page
-          link you can share with your group.
-        </p>
+        <DashPageHeader
+          title="Create a campaign"
+          description="Set the target, privacy rules and payment options. Korvio will generate a public page link you can share with your group."
+        />
 
         <form action={onSubmit} className="mt-8 grid gap-4 md:grid-cols-2">
           <div className="md:col-span-2">
@@ -195,7 +192,9 @@ export default function NewCampaignPage() {
           ) : null}
 
           <div className="md:col-span-2">
-            <Button disabled={loading}>{loading ? "Creating..." : "Create campaign"}</Button>
+            <button type="submit" className="dash-btn-primary" disabled={loading}>
+              {loading ? "Creating..." : "Create campaign"}
+            </button>
           </div>
         </form>
         </div>
