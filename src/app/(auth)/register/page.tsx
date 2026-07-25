@@ -73,12 +73,8 @@ function RegisterForm() {
           />
         </div>
         {error ? <p className="text-sm text-[var(--danger)]">{error}</p> : null}
-        <Button className="w-full" disabled={loading}>
-          {loading
-            ? "Creating..."
-            : createCampaign
-              ? "Register and set up campaign"
-              : "Create account"}
+        <Button className="w-full" loading={loading}>
+          {createCampaign ? "Register and set up campaign" : "Create account"}
         </Button>
       </form>
       <p className="mt-4 text-sm text-[var(--ink-soft)]">

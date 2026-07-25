@@ -250,12 +250,8 @@ export function CampaignContributePanel({
         {error ? <p className="text-sm text-[var(--danger)]">{error}</p> : null}
         {message ? <p className="text-sm text-[var(--success)]">{message}</p> : null}
 
-        <Button type="submit" size="lg" disabled={loading} className="w-full">
-          {loading
-            ? "Please wait..."
-            : mode === "pay"
-              ? "Contribute now"
-              : "Record pledge"}
+        <Button type="submit" size="lg" loading={loading} className="w-full">
+          {mode === "pay" ? "Contribute now" : "Record pledge"}
         </Button>
       </form>
 

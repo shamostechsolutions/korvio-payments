@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
 import { DashPageHeader } from "@/components/dashboard/dash-page";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
@@ -268,7 +269,8 @@ export default function NewCampaignPage() {
           ) : null}
 
           <div className="md:col-span-2">
-            <button type="submit" className="dash-btn-primary" disabled={loading}>
+            <button type="submit" className="dash-btn-primary inline-flex items-center gap-2" disabled={loading}>
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
               {loading ? "Creating..." : "Create campaign"}
             </button>
           </div>

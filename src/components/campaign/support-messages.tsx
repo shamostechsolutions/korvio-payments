@@ -136,8 +136,8 @@ export function SupportMessagesSection({ campaignCode }: Props) {
         </label>
         {error ? <p className="text-sm text-[var(--danger)]">{error}</p> : null}
         {success ? <p className="text-sm text-[var(--success)]">{success}</p> : null}
-        <Button type="submit" disabled={loading} className="w-full sm:w-auto">
-          {loading ? "Posting..." : "Post message"}
+        <Button type="submit" loading={loading} className="w-full sm:w-auto">
+          Post message
         </Button>
       </form>
     </section>

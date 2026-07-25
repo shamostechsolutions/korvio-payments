@@ -1,15 +1,20 @@
 import { cn } from "@/lib/utils/cn";
+import { Loader2 } from "lucide-react";
 import type { ButtonHTMLAttributes } from "react";
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary" | "ghost" | "danger";
   size?: "sm" | "md" | "lg";
+  loading?: boolean;
 };
 
 export function Button({
   className,
   variant = "primary",
   size = "md",
+  loading = false,
+  children,
+  disabled,
   ...props
 }: Props) {
   return (
@@ -28,7 +33,11 @@ export function Button({
         variant === "danger" && "bg-[var(--danger)] text-white hover:opacity-90",
         className,
       )}
+      disabled={disabled || loading}
       {...props}
-    />
+    >
+      {loading ? <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden /> : null}
+      {children}
+    </button>
   );
 }

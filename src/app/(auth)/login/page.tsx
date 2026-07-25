@@ -54,8 +54,8 @@ function LoginForm() {
           <Input name="password" type="password" required placeholder="••••••••" />
         </div>
         {error ? <p className="text-sm text-[var(--danger)]">{error}</p> : null}
-        <Button className="w-full" disabled={loading}>
-          {loading ? "Signing in..." : "Sign in"}
+        <Button className="w-full" loading={loading}>
+          Sign in
         </Button>
       </form>
       <p className="mt-4 text-sm text-[var(--ink-soft)]">

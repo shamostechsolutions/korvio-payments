@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 import { useState } from "react";
 
 export function CashoutActions({
@@ -42,8 +43,9 @@ export function CashoutActions({
           type="button"
           disabled={loading}
           onClick={() => void updateStatus("PROCESSING")}
-          className="dash-btn-secondary text-xs"
+          className="dash-btn-secondary inline-flex items-center gap-1.5 text-xs"
         >
+          {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
           Mark processing
         </button>
       ) : null}
@@ -51,16 +53,18 @@ export function CashoutActions({
         type="button"
         disabled={loading}
         onClick={() => void updateStatus("COMPLETED")}
-        className="dash-btn-primary text-xs"
+        className="dash-btn-primary inline-flex items-center gap-1.5 text-xs"
       >
+        {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
         Mark paid
       </button>
       <button
         type="button"
         disabled={loading}
         onClick={() => void updateStatus("FAILED")}
-        className="dash-btn-secondary text-xs text-red-400"
+        className="dash-btn-secondary inline-flex items-center gap-1.5 text-xs text-red-400"
       >
+        {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
         Failed
       </button>
       {error ? <p className="w-full text-xs text-red-400">{error}</p> : null}
