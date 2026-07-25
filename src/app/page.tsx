@@ -1,65 +1,83 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Logo } from "@/components/brand/logo";
+import { Button } from "@/components/ui/button";
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="brand-pattern relative min-h-screen overflow-hidden">
+      <div className="mx-auto flex min-h-screen max-w-6xl flex-col px-5 pb-16 pt-6 md:px-8">
+        <header className="flex items-center justify-between animate-rise">
+          <Logo />
+          <div className="flex items-center gap-2">
+            <Link href="/login">
+              <Button variant="ghost" size="sm">
+                Log in
+              </Button>
+            </Link>
+            <Link href="/register">
+              <Button size="sm">Start free</Button>
+            </Link>
+          </div>
+        </header>
+
+        <section className="relative mt-10 flex flex-1 flex-col justify-center md:mt-0">
+          <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_70%_40%,rgba(11,61,50,0.12),transparent_45%)]" />
+          <p className="animate-rise font-[family-name:var(--font-display)] text-5xl font-800 leading-[0.95] tracking-tight text-[var(--brand)] sm:text-6xl md:text-7xl lg:text-8xl">
+            Korvio
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+          <h1 className="animate-rise-delay mt-5 max-w-2xl text-2xl font-semibold leading-snug text-[var(--ink)] md:text-3xl">
+            Your group talks on WhatsApp.
+            <br />
+            Korvio handles the contributions.
+          </h1>
+          <p className="mt-4 max-w-xl text-base text-[var(--ink-soft)] md:text-lg animate-rise-delay">
+            Collect pledges, record payments, send private reminders and share
+            clear progress updates — without exposing individual amounts in the
+            group chat.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center gap-3 animate-rise-delay">
+            <Link href="/register">
+              <Button size="lg">Create a campaign</Button>
+            </Link>
+            <Link href="/login">
+              <Button size="lg" variant="secondary">
+                Open dashboard
+              </Button>
+            </Link>
+            <Link href="/demo/chat">
+              <Button size="lg" variant="ghost">
+                Try WhatsApp buttons
+              </Button>
+            </Link>
+          </div>
+        </section>
+
+        <section className="mt-14 grid gap-4 md:grid-cols-3">
+          {[
+            {
+              title: "WhatsApp-first",
+              body: "Members join from a campaign link, pledge privately, and check balances without leaving WhatsApp.",
+            },
+            {
+              title: "Private by default",
+              body: "The group sees names and statuses. Individual amounts stay with contributors and authorised treasurers.",
+            },
+            {
+              title: "Built for accountability",
+              body: "Manual payments, expenses, reminders, group updates and downloadable reports in one place.",
+            },
+          ].map((item) => (
+            <article key={item.title} className="surface rounded-2xl p-5">
+              <h2 className="font-[family-name:var(--font-display)] text-xl font-700 text-[var(--brand)]">
+                {item.title}
+              </h2>
+              <p className="mt-2 text-sm leading-relaxed text-[var(--ink-soft)]">
+                {item.body}
+              </p>
+            </article>
+          ))}
+        </section>
+      </div>
+    </main>
   );
 }

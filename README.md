@@ -1,36 +1,118 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Korvio
 
-## Getting Started
+WhatsApp-first contribution, pledge and accountability platform.
 
-First, run the development server:
+> Your group talks on WhatsApp. Korvio handles the contributions.
+
+## What this MVP includes
+
+- Admin registration / login
+- Campaign creation with codes, public links, WhatsApp deep links and QR codes
+- Contributor import and management
+- Pledges and partial payments
+- Mock automatic payments + webhook completion
+- Manual payment recording
+- Private amounts / public names + statuses
+- WhatsApp conversation engine (`JOIN CODE`, menus, pledges, balances, admin commands)
+- Private reminders (with confirmation)
+- Group update generator
+- Expenses, budget snapshot, roles/permissions, audit log
+- CSV / Excel / JSON reports
+- Public campaign progress page
+
+## Stack
+
+- Next.js 16 (App Router)
+- PostgreSQL + Prisma
+- WhatsApp Cloud API compatible webhooks (mock-friendly locally)
+- Pluggable payment provider interface (ships with `mock`)
+
+## Quick start
+
+### 1. Start Postgres
+
+```bash
+docker compose up -d
+```
+
+Postgres is exposed on port `5434` by default (to avoid clashing with other local Postgres services).
+
+### 2. Install and migrate
+
+```bash
+npm install
+npx prisma migrate dev --name init
+npm run db:seed
+```
+
+### 3. Run the app
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Demo login
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Email: `moses@korvio.app`
+- Password: `korvio123`
+- Campaign code: `MSW-2026`
 
-## Learn More
+## Local WhatsApp testing
 
-To learn more about Next.js, take a look at the following resources:
+Without Meta credentials, Korvio logs outbound WhatsApp messages to the server console.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Simulate an inbound message:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+curl -X POST http://localhost:3000/api/webhooks/whatsapp \
+  -H 'Content-Type: application/json' \
+  -d '{"from":"256700000202","text":"JOIN MSW-2026"}'
+```
 
-## Deploy on Vercel
+Then continue the flow:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+curl -X POST http://localhost:3000/api/webhooks/whatsapp \
+  -H 'Content-Type: application/json' \
+  -d '{"from":"256700000202","text":"1"}'
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Mock payment completion
+
+After a payment is initiated, complete it with:
+
+```bash
+curl -X POST http://localhost:3000/api/webhooks/payments \
+  -H 'Content-Type: application/json' \
+  -H 'x-korvio-signature: korvio-payment-webhook-secret' \
+  -d '{
+    "eventId":"evt-1",
+    "providerReference":"MOCK-XXXX",
+    "status":"SUCCESSFUL",
+    "providerFee":0
+  }'
+```
+
+Or set `MOCK_AUTO_COMPLETE=true` in `.env` to auto-complete mock payments.
+
+## Environment
+
+Copy `.env.example` to `.env` and set:
+
+- `DATABASE_URL`
+- `AUTH_SECRET`
+- `WHATSAPP_*` for Cloud API
+- `PAYMENT_PROVIDER=mock` for local development
+
+## Product principle
+
+The WhatsApp group stays the conversation channel.
+
+Sensitive amounts stay private to:
+
+- the contributor
+- campaign owners
+- authorised treasurers / financial admins
+- auditors when permitted

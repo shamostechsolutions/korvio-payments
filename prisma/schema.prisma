@@ -1,0 +1,567 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum AccountType {
+  ADMIN
+  CONTRIBUTOR
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CLOSED
+  CANCELLED
+  ARCHIVED
+}
+
+enum CampaignCategory {
+  WEDDING
+  INTRODUCTION
+  FUNERAL
+  MEDICAL
+  EDUCATION
+  CHURCH
+  ALUMNI
+  COMMUNITY
+  OFFICE
+  BIRTHDAY
+  FAMILY_EMERGENCY
+  ASSOCIATION
+  MEMBERSHIP
+  FUNDRAISING
+  OTHER
+}
+
+enum ContributorListVisibility {
+  NAMES_AND_STATUSES
+  NAMES_ONLY
+  STATUSES_WITHOUT_NAMES
+  HIDDEN
+  OPT_IN_ONLY
+  AMOUNTS_WHEN_PERMITTED
+}
+
+enum AmountVisibility {
+  PRIVATE
+  PUBLIC_OPT_IN
+  PUBLIC
+}
+
+enum AdminRole {
+  OWNER
+  TREASURER
+  SECRETARY
+  AUDITOR
+  VIEWER
+}
+
+enum AdminStatus {
+  INVITED
+  ACTIVE
+  REVOKED
+}
+
+enum ContributorStatus {
+  NOT_JOINED
+  JOINED
+  NOT_YET_PLEDGED
+  PLEDGED
+  PAYMENT_PENDING
+  PARTIALLY_PAID
+  FULLY_PAID
+  PAID_WITHOUT_PLEDGE
+  OVERPAID
+  PAYMENT_FAILED
+  WAIVED
+  ANONYMOUS
+  IN_KIND
+  REFUNDED
+  CANCELLED
+}
+
+enum PledgeStatus {
+  ACTIVE
+  FULFILLED
+  CANCELLED
+  CHANGED
+}
+
+enum PaymentMethod {
+  MTN_MOMO
+  AIRTEL_MONEY
+  BANK
+  CARD
+  CASH
+  CHEQUE
+  CARD_TERMINAL
+  IN_PERSON
+  DIRECT_TO_TREASURER
+  OTHER
+}
+
+enum PaymentStatus {
+  CREATED
+  PENDING
+  PROCESSING
+  SUCCESSFUL
+  FAILED
+  EXPIRED
+  CANCELLED
+  REFUNDED
+  PARTIALLY_REFUNDED
+  REVERSED
+}
+
+enum ExpenseApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum InKindStatus {
+  PLEDGED
+  DELIVERED
+  VERIFIED
+  CANCELLED
+}
+
+enum ReminderType {
+  PLEDGE_UNPAID
+  PARTIAL_OUTSTANDING
+  PROMISED_DATE_APPROACHING
+  PROMISED_DATE_PASSED
+  DEADLINE_APPROACHING
+  PAYMENT_FAILED
+  PAYMENT_PENDING_TOO_LONG
+  CUSTOM
+}
+
+enum ReminderStatus {
+  SCHEDULED
+  PENDING_APPROVAL
+  SENT
+  FAILED
+  CANCELLED
+  SKIPPED
+}
+
+enum ReminderTone {
+  FRIENDLY
+  FORMAL
+  URGENT
+}
+
+enum ConversationState {
+  IDLE
+  AWAITING_CAMPAIGN_SELECTION
+  AWAITING_MAIN_MENU
+  AWAITING_PLEDGE_AMOUNT
+  AWAITING_PLEDGE_DATE
+  AWAITING_PLEDGE_CONFIRMATION
+  AWAITING_PAYMENT_AMOUNT
+  AWAITING_PAYMENT_METHOD
+  AWAITING_PHONE_CONFIRMATION
+  AWAITING_PAYMENT_COMPLETION
+  AWAITING_REMINDER_CONFIRMATION
+  AWAITING_EXPENSE_DETAILS
+  AWAITING_ADMIN_COMMAND
+  AWAITING_RECORD_PAYMENT
+  AWAITING_CONTACT_MESSAGE
+}
+
+model User {
+  id            String      @id @default(cuid())
+  fullName      String      @map("full_name")
+  phoneNumber   String      @unique @map("phone_number")
+  email         String?     @unique
+  passwordHash  String?     @map("password_hash")
+  profileImage  String?     @map("profile_image")
+  accountType   AccountType @default(CONTRIBUTOR) @map("account_type")
+  status        UserStatus  @default(ACTIVE)
+  twoFactorEnabled Boolean  @default(false) @map("two_factor_enabled")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  ownedCampaigns   Campaign[]             @relation("CampaignOwner")
+  adminMemberships CampaignAdministrator[]
+  contributors     Contributor[]
+  auditLogs        AuditLog[]
+  sessions         Session[]
+  otpCodes         OtpCode[]
+  recordedPayments Payment[]              @relation("PaymentRecorder")
+  recordedExpenses Expense[]              @relation("ExpenseRecorder")
+  approvedExpenses Expense[]              @relation("ExpenseApprover")
+  createdReminders Reminder[]             @relation("ReminderCreator")
+  verifiedInKinds  InKindContribution[]   @relation("InKindVerifier")
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model OtpCode {
+  id          String   @id @default(cuid())
+  userId      String?  @map("user_id")
+  phoneNumber String   @map("phone_number")
+  code        String
+  purpose     String
+  expiresAt   DateTime @map("expires_at")
+  consumedAt  DateTime? @map("consumed_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([phoneNumber, purpose])
+  @@map("otp_codes")
+}
+
+model Campaign {
+  id                          String                     @id @default(cuid())
+  campaignCode                String                     @unique @map("campaign_code")
+  ownerId                     String                     @map("owner_id")
+  name                        String
+  category                    CampaignCategory
+  description                 String
+  currency                    String                     @default("UGX")
+  targetAmount                Int                        @map("target_amount")
+  totalPledged                Int                        @default(0) @map("total_pledged")
+  totalReceived               Int                        @default(0) @map("total_received")
+  totalExpenses               Int                        @default(0) @map("total_expenses")
+  totalFees                   Int                        @default(0) @map("total_fees")
+  totalInKindValue            Int                        @default(0) @map("total_in_kind_value")
+  availableBalance            Int                        @default(0) @map("available_balance")
+  startDate                   DateTime                   @map("start_date")
+  deadline                    DateTime
+  status                      CampaignStatus             @default(DRAFT)
+  imageUrl                    String?                    @map("image_url")
+  organiserName               String                     @map("organiser_name")
+  organiserPhone              String                     @map("organiser_phone")
+  beneficiaryName             String?                    @map("beneficiary_name")
+  contactPerson               String?                    @map("contact_person")
+  contributorListVisibility   ContributorListVisibility  @default(NAMES_AND_STATUSES) @map("contributor_list_visibility")
+  contributionAmountVisibility AmountVisibility          @default(PRIVATE) @map("contribution_amount_visibility")
+  allowPledges                Boolean                    @default(true) @map("allow_pledges")
+  allowPartialPayments        Boolean                    @default(true) @map("allow_partial_payments")
+  allowAnonymous              Boolean                    @default(false) @map("allow_anonymous_contributions")
+  allowInKind                 Boolean                    @default(false) @map("allow_in_kind_contributions")
+  paymentMethods              PaymentMethod[]            @map("payment_methods")
+  reminderFrequencyDays       Int                        @default(7) @map("reminder_frequency_days")
+  reminderTone                ReminderTone               @default(FRIENDLY) @map("reminder_tone")
+  remindersRequireApproval    Boolean                    @default(false) @map("reminders_require_approval")
+  allowReminderOptOut         Boolean                    @default(true) @map("allow_reminder_opt_out")
+  publicRemindersEnabled      Boolean                    @default(false) @map("public_reminders_enabled")
+  minimumPledgeAmount         Int?                       @map("minimum_pledge_amount")
+  manualPaymentVerifyThreshold Int?                      @map("manual_payment_verify_threshold")
+  createdAt                   DateTime                   @default(now()) @map("created_at")
+  updatedAt                   DateTime                   @updatedAt @map("updated_at")
+
+  owner           User                     @relation("CampaignOwner", fields: [ownerId], references: [id])
+  administrators  CampaignAdministrator[]
+  contributors    Contributor[]
+  pledges         Pledge[]
+  payments        Payment[]
+  expenses        Expense[]
+  budgetItems     BudgetItem[]
+  inKindItems     InKindContribution[]
+  reminders       Reminder[]
+  conversations   WhatsAppConversation[]
+  auditLogs       AuditLog[]
+  milestones      CampaignMilestone[]
+  webhookEvents   WebhookEvent[]
+
+  @@index([ownerId])
+  @@index([status])
+  @@map("campaigns")
+}
+
+model CampaignAdministrator {
+  id          String      @id @default(cuid())
+  campaignId  String      @map("campaign_id")
+  userId      String      @map("user_id")
+  role        AdminRole
+  permissions String[]
+  status      AdminStatus @default(INVITED)
+  invitedAt   DateTime    @default(now()) @map("invited_at")
+  acceptedAt  DateTime?   @map("accepted_at")
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, userId])
+  @@map("campaign_administrators")
+}
+
+model Contributor {
+  id                String            @id @default(cuid())
+  campaignId        String            @map("campaign_id")
+  userId            String?           @map("user_id")
+  displayName       String            @map("display_name")
+  phoneNumber       String            @map("phone_number")
+  email             String?
+  groupLabel        String?           @map("group_label")
+  notes             String?
+  publicName        Boolean           @default(true) @map("public_name")
+  publicAmount      Boolean           @default(false) @map("public_amount")
+  anonymous         Boolean           @default(false)
+  hideFromList      Boolean           @default(false) @map("hide_from_list")
+  allowReminders    Boolean           @default(true) @map("allow_reminders")
+  allowUpdates      Boolean           @default(true) @map("allow_updates")
+  status            ContributorStatus @default(JOINED)
+  pledgedAmount     Int               @default(0) @map("pledged_amount")
+  paidAmount        Int               @default(0) @map("paid_amount")
+  outstandingAmount Int               @default(0) @map("outstanding_amount")
+  expectedPaymentDate DateTime?       @map("expected_payment_date")
+  lastPaymentAt     DateTime?         @map("last_payment_at")
+  lastReminderAt    DateTime?         @map("last_reminder_at")
+  reminderCount     Int               @default(0) @map("reminder_count")
+  joinedAt          DateTime          @default(now()) @map("joined_at")
+  lastActivityAt    DateTime          @default(now()) @map("last_activity_at")
+
+  campaign      Campaign              @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user          User?                 @relation(fields: [userId], references: [id])
+  pledges       Pledge[]
+  payments      Payment[]
+  reminders     Reminder[]
+  inKindItems   InKindContribution[]
+  conversations WhatsAppConversation[]
+
+  @@unique([campaignId, phoneNumber])
+  @@index([campaignId, status])
+  @@map("contributors")
+}
+
+model Pledge {
+  id                  String       @id @default(cuid())
+  campaignId          String       @map("campaign_id")
+  contributorId       String       @map("contributor_id")
+  amount              Int
+  expectedPaymentDate DateTime?    @map("expected_payment_date")
+  status              PledgeStatus @default(ACTIVE)
+  createdAt           DateTime     @default(now()) @map("created_at")
+  updatedAt           DateTime     @updatedAt @map("updated_at")
+
+  campaign    Campaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  contributor Contributor  @relation(fields: [contributorId], references: [id], onDelete: Cascade)
+  payments    Payment[]
+
+  @@index([campaignId])
+  @@index([contributorId])
+  @@map("pledges")
+}
+
+model Payment {
+  id                   String        @id @default(cuid())
+  campaignId           String        @map("campaign_id")
+  contributorId        String        @map("contributor_id")
+  pledgeId             String?       @map("pledge_id")
+  transactionReference String        @unique @map("transaction_reference")
+  providerReference    String?       @map("provider_reference")
+  amount               Int
+  currency             String
+  paymentMethod        PaymentMethod @map("payment_method")
+  paymentProvider      String?       @map("payment_provider")
+  paymentStatus        PaymentStatus @default(CREATED) @map("payment_status")
+  providerFee          Int           @default(0) @map("provider_fee")
+  platformFee          Int           @default(0) @map("platform_fee")
+  netAmount            Int           @default(0) @map("net_amount")
+  initiatedAt          DateTime      @default(now()) @map("initiated_at")
+  completedAt          DateTime?     @map("completed_at")
+  recordedById         String?       @map("recorded_by")
+  manualPayment        Boolean       @default(false) @map("manual_payment")
+  requiresVerification Boolean       @default(false) @map("requires_verification")
+  verifiedById         String?       @map("verified_by")
+  proofUrl             String?       @map("proof_url")
+  notes                String?
+  payerPhone           String?       @map("payer_phone")
+  idempotencyKey       String?       @unique @map("idempotency_key")
+  createdAt            DateTime      @default(now()) @map("created_at")
+  updatedAt            DateTime      @updatedAt @map("updated_at")
+
+  campaign    Campaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  contributor Contributor @relation(fields: [contributorId], references: [id], onDelete: Cascade)
+  pledge      Pledge?     @relation(fields: [pledgeId], references: [id])
+  recordedBy  User?       @relation("PaymentRecorder", fields: [recordedById], references: [id])
+
+  @@index([campaignId, paymentStatus])
+  @@index([contributorId])
+  @@index([providerReference])
+  @@map("payments")
+}
+
+model Expense {
+  id             String                @id @default(cuid())
+  campaignId     String                @map("campaign_id")
+  category       String
+  description    String
+  supplier       String?
+  amount         Int
+  paymentMethod  PaymentMethod?        @map("payment_method")
+  expenseDate    DateTime              @map("expense_date")
+  receiptUrl     String?               @map("receipt_url")
+  notes          String?
+  approvalStatus ExpenseApprovalStatus @default(PENDING) @map("approval_status")
+  recordedById   String                @map("recorded_by")
+  approvedById   String?               @map("approved_by")
+  createdAt      DateTime              @default(now()) @map("created_at")
+  updatedAt      DateTime              @updatedAt @map("updated_at")
+
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  recordedBy User     @relation("ExpenseRecorder", fields: [recordedById], references: [id])
+  approvedBy User?    @relation("ExpenseApprover", fields: [approvedById], references: [id])
+
+  @@index([campaignId])
+  @@map("expenses")
+}
+
+model BudgetItem {
+  id          String   @id @default(cuid())
+  campaignId  String   @map("campaign_id")
+  name        String
+  planned     Int
+  spent       Int      @default(0)
+  committed   Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@map("budget_items")
+}
+
+model InKindContribution {
+  id             String      @id @default(cuid())
+  campaignId     String      @map("campaign_id")
+  contributorId  String      @map("contributor_id")
+  itemName       String      @map("item_name")
+  quantity       String?
+  estimatedValue Int         @map("estimated_value")
+  deliveryDate   DateTime?   @map("delivery_date")
+  status         InKindStatus @default(PLEDGED)
+  notes          String?
+  proofUrl       String?     @map("proof_url")
+  verifiedById   String?     @map("verified_by")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+
+  campaign    Campaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  contributor Contributor @relation(fields: [contributorId], references: [id], onDelete: Cascade)
+  verifiedBy  User?       @relation("InKindVerifier", fields: [verifiedById], references: [id])
+
+  @@map("in_kind_contributions")
+}
+
+model Reminder {
+  id            String         @id @default(cuid())
+  campaignId    String         @map("campaign_id")
+  contributorId String?        @map("contributor_id")
+  reminderType  ReminderType   @map("reminder_type")
+  channel       String         @default("whatsapp")
+  message       String
+  status        ReminderStatus @default(SCHEDULED)
+  scheduledAt   DateTime       @map("scheduled_at")
+  sentAt        DateTime?      @map("sent_at")
+  createdById   String?        @map("created_by")
+  createdAt     DateTime       @default(now()) @map("created_at")
+
+  campaign    Campaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  contributor Contributor? @relation(fields: [contributorId], references: [id])
+  createdBy   User?        @relation("ReminderCreator", fields: [createdById], references: [id])
+
+  @@index([campaignId, status])
+  @@map("reminders")
+}
+
+model WhatsAppConversation {
+  id            String            @id @default(cuid())
+  phoneNumber   String            @map("phone_number")
+  campaignId    String?           @map("campaign_id")
+  contributorId String?           @map("contributor_id")
+  currentState  ConversationState @default(IDLE) @map("current_state")
+  stateData     Json              @default("{}") @map("state_data")
+  lastMessageAt DateTime          @default(now()) @map("last_message_at")
+  expiresAt     DateTime          @map("expires_at")
+
+  campaign    Campaign?    @relation(fields: [campaignId], references: [id])
+  contributor Contributor? @relation(fields: [contributorId], references: [id])
+
+  @@unique([phoneNumber])
+  @@map("whatsapp_conversations")
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  campaignId   String?  @map("campaign_id")
+  userId       String?  @map("user_id")
+  action       String
+  entityType   String   @map("entity_type")
+  entityId     String?  @map("entity_id")
+  previousData Json?    @map("previous_data")
+  newData      Json?    @map("new_data")
+  ipAddress    String?  @map("ip_address")
+  userAgent    String?  @map("user_agent")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  campaign Campaign? @relation(fields: [campaignId], references: [id])
+  user     User?     @relation(fields: [userId], references: [id])
+
+  @@index([campaignId, createdAt])
+  @@map("audit_logs")
+}
+
+model CampaignMilestone {
+  id          String   @id @default(cuid())
+  campaignId  String   @map("campaign_id")
+  key         String
+  label       String
+  reachedAt   DateTime @default(now()) @map("reached_at")
+  notified    Boolean  @default(false)
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, key])
+  @@map("campaign_milestones")
+}
+
+model WebhookEvent {
+  id          String   @id @default(cuid())
+  campaignId  String?  @map("campaign_id")
+  provider    String
+  eventId     String
+  eventType   String   @map("event_type")
+  payload     Json
+  processed   Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  campaign Campaign? @relation(fields: [campaignId], references: [id])
+
+  @@unique([provider, eventId])
+  @@map("webhook_events")
+}

@@ -1,0 +1,9 @@
+{
+  "name": "Korvio",
+  "short_name": "Korvio",
+  "description": "Pledges, payments and accountability for WhatsApp groups.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f3f6f4",
+  "theme_color": "#0b3d32"
+}
