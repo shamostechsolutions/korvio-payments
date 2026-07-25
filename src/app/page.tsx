@@ -26,14 +26,13 @@ export default function HomePage() {
             Korvio
           </p>
           <h1 className="animate-rise-delay mt-5 max-w-2xl text-2xl font-semibold leading-snug text-[var(--ink)] md:text-3xl">
-            Your group talks on WhatsApp.
+            Collect pledges and payments for your group —
             <br />
-            Korvio handles the contributions.
+            all on the web.
           </h1>
           <p className="mt-4 max-w-xl text-base text-[var(--ink-soft)] md:text-lg animate-rise-delay">
-            Collect pledges, record payments, send private reminders and share
-            clear progress updates — without exposing individual amounts in the
-            group chat.
+            Share a campaign link. Members join, pledge, and pay online. WhatsApp
+            reminders can come later — Korvio works fully on the web today.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3 animate-rise-delay">
             <Link href="/register">

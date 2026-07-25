@@ -1,12 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Logo } from "@/components/brand/logo";
-import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
+import { CampaignContributePanel } from "@/components/campaign/contribute-panel";
 import { prisma } from "@/lib/db";
 import { daysRemaining, formatMoney } from "@/lib/utils/money";
 import { publicStatusLabel } from "@/lib/status";
-import { whatsappJoinLink } from "@/lib/utils/codes";
 
 export default async function PublicCampaignPage({
   params,
@@ -74,10 +73,9 @@ export default async function PublicCampaignPage({
             };
           });
 
-  const whatsappUrl = whatsappJoinLink(
-    process.env.WHATSAPP_BUSINESS_NUMBER || "256700000000",
-    campaign.campaignCode,
-  );
+  const whatsappUrl = process.env.WHATSAPP_PHONE_NUMBER_ID
+    ? `https://wa.me/${process.env.WHATSAPP_BUSINESS_NUMBER || ""}?text=${encodeURIComponent(`JOIN ${campaign.campaignCode}`)}`
+    : null;
 
   return (
     <main className="brand-pattern min-h-screen px-4 py-8 md:px-8">
@@ -91,12 +89,16 @@ export default async function PublicCampaignPage({
             {campaign.name}
           </h1>
           <p className="mt-3 text-[var(--ink-soft)]">{campaign.description}</p>
-          <div className="mt-6">
-            <a href={whatsappUrl} target="_blank" rel="noreferrer">
-              <Button size="lg">Pledge or pay on WhatsApp</Button>
-            </a>
-          </div>
         </section>
+
+        <CampaignContributePanel
+          campaignCode={campaign.campaignCode}
+          currency={campaign.currency}
+          allowPledges={campaign.allowPledges}
+          minimumPledgeAmount={campaign.minimumPledgeAmount}
+          organiserName={campaign.organiserName}
+          organiserPhone={campaign.organiserPhone}
+        />
 
         <div className="grid gap-3 sm:grid-cols-2">
           <StatCard
@@ -159,6 +161,15 @@ export default async function PublicCampaignPage({
           <Link href="/" className="font-semibold text-[var(--brand)]">
             About Korvio
           </Link>
+          {whatsappUrl ? (
+            <>
+              {" "}
+              ·{" "}
+              <a href={whatsappUrl} target="_blank" rel="noreferrer" className="font-semibold text-[var(--brand)]">
+                WhatsApp
+              </a>
+            </>
+          ) : null}
         </p>
       </div>
     </main>

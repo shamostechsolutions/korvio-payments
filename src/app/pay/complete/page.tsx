@@ -56,7 +56,7 @@ export default async function PayCompletePage({
               </p>
             </div>
             <p className="text-sm text-stone-500">
-              Your receipt has been sent to WhatsApp. You can close this page.
+              Your payment was recorded. You can return to the campaign page for your updated balance.
             </p>
           </>
         ) : isFailed && payment ? (
@@ -66,7 +66,7 @@ export default async function PayCompletePage({
               <h1 className="text-2xl font-semibold text-stone-900">Payment not completed</h1>
               <p className="text-stone-600">
                 The payment for {payment.campaign.name} was not successful. You can try again
-                from WhatsApp.
+                from the campaign page.
               </p>
             </div>
           </>
@@ -79,14 +79,18 @@ export default async function PayCompletePage({
               </h1>
               <p className="text-stone-600">
                 {txRef
-                  ? "We are confirming your payment. Your receipt will arrive on WhatsApp shortly."
+                  ? "We are confirming your payment. Refresh the campaign page shortly for your updated balance."
                   : "No payment reference was provided."}
               </p>
             </div>
           </>
         )}
 
-        {whatsappLink ? (
+        {payment?.campaign ? (
+          <Link href={`/c/${payment.campaign.campaignCode}`} className="block w-full">
+            <Button className="w-full">Back to campaign</Button>
+          </Link>
+        ) : whatsappLink ? (
           <Link href={whatsappLink} className="block w-full">
             <Button className="w-full">Return to WhatsApp</Button>
           </Link>
