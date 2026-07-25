@@ -25,7 +25,6 @@ const campaignLinks = [
   { href: "wallet", label: "Wallet & cash-out", icon: Wallet },
   { href: "settings", label: "Public page", icon: Globe },
 ];
-
 export function DashboardSidebar({
   campaignId,
   campaignName,
