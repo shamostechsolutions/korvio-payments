@@ -7,7 +7,7 @@ export const CATEGORY_LABELS: Record<CampaignCategory, string> = {
   MEDICAL: "Medical & Healthcare",
   EDUCATION: "Education",
   CHURCH: "Church",
-  ALUMNI: "Alumni",
+  ALUMNI: "School reunion",
   COMMUNITY: "Community",
   OFFICE: "Office",
   BIRTHDAY: "Birthday",

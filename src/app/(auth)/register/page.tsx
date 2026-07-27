@@ -57,7 +57,7 @@ function RegisterForm() {
       <p className="mt-2 text-sm text-[var(--ink-soft)]">
         {fromWhatsApp
           ? "You came from WhatsApp. Register here, then we’ll take you straight to campaign setup."
-          : "Set up campaigns for weddings, medical drives, alumni funds and more."}
+          : "Set up campaigns for weddings, medical drives, school reunions and more."}
       </p>
       <form onSubmit={(e) => void handleSubmit(e)} className="mt-6 space-y-4">
         <div>

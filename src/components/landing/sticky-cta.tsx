@@ -42,7 +42,7 @@ export function LandingStickyCta() {
       aria-hidden={!visible}
     >
       <div className="landing-sticky-cta-inner">
-        <p className="landing-sticky-cta-label">Pool money together</p>
+        <p className="landing-sticky-cta-label">Group collections</p>
         <Link href="/register" className="flex-1">
           <Button className="w-full" size="sm">
             Start a campaign
