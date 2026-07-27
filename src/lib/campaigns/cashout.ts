@@ -105,6 +105,13 @@ export async function requestCampaignCashout(input: {
     newData: cashout,
   });
 
+  if (process.env.PAYMENT_PROVIDER === "pawapay") {
+    const { initiatePawapayPayoutForCashout } = await import(
+      "@/lib/payments/pawapay/payouts"
+    );
+    return initiatePawapayPayoutForCashout(cashout.id);
+  }
+
   return cashout;
 }
 

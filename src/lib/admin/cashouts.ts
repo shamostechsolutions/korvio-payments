@@ -6,7 +6,7 @@ import { formatMoney } from "@/lib/utils/money";
 
 const TERMINAL_STATUSES = new Set<CashoutStatus>(["COMPLETED", "FAILED", "CANCELLED"]);
 
-async function publishCashoutLedgerEntry(cashoutId: string) {
+export async function publishCashoutLedgerEntry(cashoutId: string) {
   const cashout = await prisma.cashout.findUnique({
     where: { id: cashoutId },
     include: { campaign: { select: { id: true, organiserName: true, currency: true } } },

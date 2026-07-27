@@ -14,6 +14,7 @@ function firstParam(value: string | string[] | undefined) {
 type PageProps = {
   searchParams: Promise<{
     tx_ref?: string | string[];
+    checkout_id?: string | string[];
     status?: string | string[];
     transaction_id?: string | string[];
   }>;
@@ -22,6 +23,8 @@ type PageProps = {
 export default async function PayCompletePage({ searchParams }: PageProps) {
   const params = await searchParams;
   const txRef = firstParam(params.tx_ref);
+  const checkoutId = firstParam(params.checkout_id);
+  const paymentRef = checkoutId || txRef;
   const redirectStatus = firstParam(params.status)?.toLowerCase();
 
   let payment: {
@@ -34,9 +37,9 @@ export default async function PayCompletePage({ searchParams }: PageProps) {
 
   let loadError = false;
 
-  if (txRef) {
+  if (paymentRef) {
     try {
-      await confirmPaymentOnReturn(txRef);
+      await confirmPaymentOnReturn(paymentRef);
     } catch (error) {
       console.error("[pay/complete] confirm failed", error);
     }
@@ -44,7 +47,10 @@ export default async function PayCompletePage({ searchParams }: PageProps) {
     try {
       payment = await prisma.payment.findFirst({
         where: {
-          OR: [{ transactionReference: txRef }, { providerReference: txRef }],
+          OR: [
+            { transactionReference: paymentRef },
+            { providerReference: paymentRef },
+          ],
         },
         select: {
           amount: true,
@@ -60,10 +66,11 @@ export default async function PayCompletePage({ searchParams }: PageProps) {
     }
   }
 
-  const flutterwaveSaysSuccess = redirectStatus === "successful";
+  const providerSaysSuccess =
+    redirectStatus === "successful" || redirectStatus === "completed";
   const isSuccess =
     payment?.paymentStatus === "SUCCESSFUL" ||
-    (flutterwaveSaysSuccess && !payment && !loadError);
+    (providerSaysSuccess && !payment && !loadError);
   const isFailed =
     payment?.paymentStatus === "FAILED" || payment?.paymentStatus === "CANCELLED";
 
@@ -81,7 +88,7 @@ export default async function PayCompletePage({ searchParams }: PageProps) {
                 Payment received — confirming
               </h1>
               <p className="mt-2 text-[var(--ink-soft)]">
-                Flutterwave shows your payment as successful. Our server is still catching up —
+                Your payment provider shows this as successful. Our server is still confirming —
                 refresh this page in a minute or check the campaign page.
               </p>
             </>
@@ -96,7 +103,7 @@ export default async function PayCompletePage({ searchParams }: PageProps) {
                 {payment.campaign?.name ?? "your campaign"}.
               </p>
             </>
-          ) : isSuccess && flutterwaveSaysSuccess ? (
+          ) : isSuccess && providerSaysSuccess ? (
             <>
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10 text-3xl text-emerald-400">
                 ✓
@@ -140,8 +147,8 @@ export default async function PayCompletePage({ searchParams }: PageProps) {
             </Link>
           )}
 
-          {txRef ? (
-            <p className="mt-4 text-xs text-[var(--ink-soft)]">Ref: {txRef}</p>
+          {paymentRef ? (
+            <p className="mt-4 text-xs text-[var(--ink-soft)]">Ref: {paymentRef}</p>
           ) : null}
         </div>
         <div className="mt-8 flex justify-center">

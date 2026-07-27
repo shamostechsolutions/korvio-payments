@@ -474,6 +474,7 @@ model Cashout {
   status        CashoutStatus @default(PENDING)
   requestedAt   DateTime      @default(now()) @map("requested_at")
   processedAt   DateTime?     @map("processed_at")
+  providerPayoutId String?    @map("provider_payout_id")
   notes         String?
 
   campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
