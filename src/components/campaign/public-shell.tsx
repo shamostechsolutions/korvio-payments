@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { getSessionUser } from "@/lib/auth/session";
 
 const LANDING_NAV = [
+  { href: "#campaigns", label: "Campaigns" },
   { href: "#how-it-works", label: "How it works" },
-  { href: "#why-korvio", label: "Why Korvio" },
   { href: "#pricing", label: "Pricing" },
   { href: "#faq", label: "FAQ" },
 ];
