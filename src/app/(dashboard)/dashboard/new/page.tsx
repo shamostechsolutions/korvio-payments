@@ -92,42 +92,6 @@ export default function NewCampaignPage() {
         />
 
         <form action={onSubmit} className="mt-8 grid gap-4 md:grid-cols-2">
-          <div className="md:col-span-2">
-            <Label>Campaign name</Label>
-            <Input name="name" required placeholder="Moses & Sharon Wedding Contribution" />
-          </div>
-          <div>
-            <Label>Category</Label>
-            <Select
-              name="category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-            >
-              {categories.map((c) => (
-                <option key={c} value={c}>
-                  {c.replaceAll("_", " ")}
-                </option>
-              ))}
-            </Select>
-          </div>
-          <div>
-            <Label>Custom code (optional)</Label>
-            <Input name="campaignCode" placeholder="MSW-2026" />
-          </div>
-          <div className="md:col-span-2">
-            <Label>Description</Label>
-            <Textarea
-              name="description"
-              required
-              rows={3}
-              placeholder="Help us celebrate and cover wedding costs with dignity and accountability."
-            />
-          </div>
-          <div className="md:col-span-2">
-            <Label>Cover image URL (optional)</Label>
-            <Input name="imageUrl" placeholder="https://example.com/photo.jpg" />
-          </div>
-
           <div className="md:col-span-2 space-y-3 rounded-xl border border-[var(--line)] p-4">
             <Label>Fundraising type</Label>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -171,18 +135,55 @@ export default function NewCampaignPage() {
           </div>
 
           {fundraisingMode === "GOAL" ? (
-            <div>
+            <div className="md:col-span-2">
               <Label>Target amount</Label>
               <Input name="targetAmount" required placeholder="20000000" />
             </div>
           ) : (
-            <div className="flex items-end">
+            <div className="md:col-span-2">
               <p className="text-sm text-[var(--ink-soft)]">
                 Contributors can give any amount. The campaign stays open until you close it or the
                 deadline passes.
               </p>
             </div>
           )}
+
+          <div className="md:col-span-2">
+            <Label>Campaign name</Label>
+            <Input name="name" required placeholder="Moses & Sharon Wedding Contribution" />
+          </div>
+          <div>
+            <Label>Category</Label>
+            <Select
+              name="category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            >
+              {categories.map((c) => (
+                <option key={c} value={c}>
+                  {c.replaceAll("_", " ")}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <div>
+            <Label>Custom code (optional)</Label>
+            <Input name="campaignCode" placeholder="MSW-2026" />
+          </div>
+          <div className="md:col-span-2">
+            <Label>Description</Label>
+            <Textarea
+              name="description"
+              required
+              rows={3}
+              placeholder="Help us celebrate and cover wedding costs with dignity and accountability."
+            />
+          </div>
+          <div className="md:col-span-2">
+            <Label>Cover image URL (optional)</Label>
+            <Input name="imageUrl" placeholder="https://example.com/photo.jpg" />
+          </div>
+
           <div>
             <Label>Currency</Label>
             <Select name="currency" defaultValue="UGX">
