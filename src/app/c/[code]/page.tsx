@@ -8,6 +8,7 @@ import { ShareButtons } from "@/components/campaign/share-buttons";
 import { SupportMessagesSection } from "@/components/campaign/support-messages";
 import { prisma } from "@/lib/db";
 import { categoryLabel } from "@/lib/campaigns/labels";
+import { MIN_ONLINE_CONTRIBUTION } from "@/lib/payments/provider-fees";
 import {
   campaignProgressPct,
   isCampaignFundraisingComplete,
@@ -328,6 +329,7 @@ export default async function PublicCampaignPage({
                 minimumPledgeAmount={campaign.minimumPledgeAmount}
                 organiserName={campaign.organiserName}
                 organiserPhone={campaign.organiserPhone}
+                minOnlineContribution={MIN_ONLINE_CONTRIBUTION}
               />
             ) : (
               <div className="card p-6 lg:sticky lg:top-24">

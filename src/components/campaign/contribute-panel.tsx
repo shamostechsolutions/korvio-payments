@@ -27,10 +27,11 @@ type Props = {
   minimumPledgeAmount?: number | null;
   organiserName: string;
   organiserPhone: string;
+  minOnlineContribution?: number;
   compact?: boolean;
 };
 
-const QUICK_AMOUNTS = [20000, 50000, 100000, 200000];
+const QUICK_AMOUNTS = [5000, 10000, 20000, 50000, 100000];
 
 function storageKey(code: string) {
   return `korvio:contributor:${code.toUpperCase()}`;
@@ -49,6 +50,7 @@ export function CampaignContributePanel({
   minimumPledgeAmount,
   organiserName,
   organiserPhone,
+  minOnlineContribution = 5000,
   compact = false,
 }: Props) {
   const [mode, setMode] = useState<"pay" | "pledge">("pay");
@@ -227,7 +229,9 @@ export function CampaignContributePanel({
             placeholder={
               minimumPledgeAmount && mode === "pledge"
                 ? `Min ${minimumPledgeAmount.toLocaleString()}`
-                : "e.g. 50000 or 50k"
+                : mode === "pay"
+                  ? `Min ${minOnlineContribution.toLocaleString()} online`
+                  : "e.g. 50000 or 50k"
             }
             className="text-lg font-semibold"
             required
@@ -246,6 +250,13 @@ export function CampaignContributePanel({
             </button>
           ))}
         </div>
+
+        {mode === "pay" ? (
+          <p className="text-xs text-[var(--ink-soft)]">
+            Online MoMo minimum {minOnlineContribution.toLocaleString()} {currency}. Smaller amounts
+            lose too much to network fees.
+          </p>
+        ) : null}
 
         {error ? <p className="text-sm text-[var(--danger)]">{error}</p> : null}
         {message ? <p className="text-sm text-[var(--success)]">{message}</p> : null}

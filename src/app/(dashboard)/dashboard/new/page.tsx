@@ -8,6 +8,11 @@ import { DashboardSidebar } from "@/components/dashboard/sidebar";
 import { DashPageHeader } from "@/components/dashboard/dash-page";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { OPEN_FUNDRAISING_DEFAULT_CATEGORIES } from "@/lib/campaigns/fundraising";
+import {
+  PLATFORM_FEE_PERCENT_LABEL,
+  calculateCashoutNet,
+} from "@/lib/payments/fees";
+import { formatMoney } from "@/lib/utils/money";
 
 const categories = [
   "WEDDING",
@@ -267,6 +272,15 @@ export default function NewCampaignPage() {
           {error ? (
             <p className="md:col-span-2 text-sm text-[var(--danger)]">{error}</p>
           ) : null}
+
+          <p className="md:col-span-2 rounded-xl border border-[var(--line)] bg-[var(--bg)] px-4 py-3 text-sm text-[var(--ink-soft)]">
+            <strong className="text-[var(--ink)]">Pricing:</strong> free to create. Contributors
+            pay exactly what they enter. When you cash out, Korvio deducts a{" "}
+            {PLATFORM_FEE_PERCENT_LABEL} withdrawal fee (includes transfer to your MoMo). Contributors
+            pay what they enter — their network may charge separately. Example:{" "}
+            {formatMoney(1_000_000, "UGX")} collected →{" "}
+            {formatMoney(calculateCashoutNet(1_000_000).netAmount, "UGX")} to your phone.
+          </p>
 
           <div className="md:col-span-2">
             <button type="submit" className="dash-btn-primary inline-flex items-center gap-2" disabled={loading}>

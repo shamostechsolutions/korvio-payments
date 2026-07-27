@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { Input, Label, Select } from "@/components/ui/input";
 import {
   PLATFORM_FEE_PERCENT_LABEL,
-  calculateCashoutNet,
+  calculateCashoutPreview,
 } from "@/lib/payments/fees";
 import { formatMoney } from "@/lib/utils/money";
 import { DashBadge, DashCard, DashMessage } from "@/components/dashboard/dash-page";
@@ -80,8 +80,8 @@ export function CampaignWalletPanel({
   }, [cashoutAmount]);
 
   const preview = useMemo(
-    () => calculateCashoutNet(parsedAmount > 0 ? parsedAmount : 0),
-    [parsedAmount],
+    () => calculateCashoutPreview(parsedAmount > 0 ? parsedAmount : 0, payoutMethod),
+    [parsedAmount, payoutMethod],
   );
 
   const isClosed = ["COMPLETED", "CLOSED"].includes(status);
@@ -154,8 +154,9 @@ export function CampaignWalletPanel({
           {openMode
             ? "Open contributions stay live until you close the campaign. You can withdraw in parts as money comes in."
             : "You can withdraw in parts while fundraising is active, or close the campaign when you are done."}{" "}
-          Korvio takes a {PLATFORM_FEE_PERCENT_LABEL} service fee at cash-out — contributors never
-          pay extra at checkout. Every completed withdrawal appears on your public campaign page.
+          One {PLATFORM_FEE_PERCENT_LABEL} fee when you withdraw — it includes sending money to
+          your MTN or Airtel. Contributors pay what they choose at checkout (their network may
+          charge them separately). You see the exact amount before you confirm.
         </p>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
@@ -169,7 +170,7 @@ export function CampaignWalletPanel({
           </div>
           <div className="rounded-xl border border-[var(--dash-border)] bg-[var(--dash-bg)] p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-[var(--dash-muted)]">
-              Korvio fee ({PLATFORM_FEE_PERCENT_LABEL})
+              Withdrawal fee ({PLATFORM_FEE_PERCENT_LABEL}, incl. transfer)
             </p>
             <p className="mt-2 text-2xl font-bold text-[var(--dash-ink)]">
               {formatMoney(preview.platformFee, currency)}
@@ -177,7 +178,7 @@ export function CampaignWalletPanel({
           </div>
           <div className="rounded-xl border border-[var(--dash-border)] bg-[var(--dash-bg)] p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-[var(--dash-muted)]">
-              Receiver gets
+              You receive on MoMo
             </p>
             <p className="mt-2 text-2xl font-bold text-emerald-400">
               {formatMoney(preview.netAmount, currency)}
@@ -371,7 +372,7 @@ export function CampaignWalletPanel({
         open={cashoutModalOpen}
         onOpenChange={setCashoutModalOpen}
         title="Confirm cash-out"
-        description={`Withdraw ${formatMoney(parsedAmount, currency)} from the campaign wallet. After the ${PLATFORM_FEE_PERCENT_LABEL} Korvio fee, ${formatMoney(preview.netAmount, currency)} will be sent to ${receiverSummary} once Korvio approves the request.`}
+        description={`Withdraw ${formatMoney(parsedAmount, currency)}. One ${PLATFORM_FEE_PERCENT_LABEL} fee (includes MoMo transfer) — ${formatMoney(preview.netAmount, currency)} will be sent to ${receiverSummary} after Korvio approves.`}
         confirmLabel="Request cash-out"
         loading={loading === "cashout"}
         onConfirm={requestCashout}

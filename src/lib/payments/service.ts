@@ -194,7 +194,7 @@ export async function completePaymentFromWebhook(input: {
     where: { id: payment.id },
     data: {
       paymentStatus: input.status as typeof payment.paymentStatus,
-      providerFee: 0,
+      providerFee: input.providerFee ?? 0,
       completedAt: input.status === "SUCCESSFUL" ? new Date() : payment.completedAt,
       netAmount: payment.amount,
     },

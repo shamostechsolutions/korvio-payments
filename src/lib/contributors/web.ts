@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/audit";
 import { recalculateContributorAndCampaign } from "@/lib/campaigns/totals";
 import { initiateContributorPayment } from "@/lib/payments/service";
+import { validateOnlineContributionAmount } from "@/lib/payments/provider-fees";
 import { defaultPaymentMethod } from "@/lib/whatsapp/replies";
 import { formatMoney, parseMoneyInput } from "@/lib/utils/money";
 
@@ -122,6 +123,11 @@ export async function initiateWebPayment(input: {
   }
 
   const method = defaultPaymentMethod(campaign);
+
+  const minError = validateOnlineContributionAmount(parsed);
+  if (minError && method !== "CASH" && method !== "DIRECT_TO_TREASURER") {
+    throw new Error(minError);
+  }
 
   if (method === "CASH" || method === "DIRECT_TO_TREASURER") {
     return {

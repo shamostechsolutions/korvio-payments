@@ -27,7 +27,7 @@ const STEPS = [
   {
     step: "3",
     title: "Withdraw from your wallet",
-    body: "Money sits in your campaign wallet until you close out and cash to MTN or Airtel.",
+    body: "Money sits in your campaign wallet. When you cash out, Korvio deducts the service fee upfront — you see the exact amount before you confirm.",
   },
 ];
 
@@ -64,8 +64,12 @@ const FAQ = [
     a: "No. They open your link, enter name and phone, and pay.",
   },
   {
-    q: "What does Korvio charge?",
-    a: `${PLATFORM_FEE_PERCENT_LABEL} at cash-out only. Contributors pay nothing extra at checkout.`,
+    q: "Who pays the withdrawal fee?",
+    a: `The organiser, once, when you cash out. One ${PLATFORM_FEE_PERCENT_LABEL} fee includes sending money to your MTN or Airtel — e.g. ${formatMoney(1_000_000, "UGX")} in your wallet → ${formatMoney(calculateCashoutNet(1_000_000).netAmount, "UGX")} on your phone. Contributors pay what they choose; their network may charge them separately.`,
+  },
+  {
+    q: "Why is there a fee at all?",
+    a: "Running the campaign page, payment handling, and the MoMo transfer to you costs money. One fee at withdrawal covers it — we do not charge again when the money hits your phone.",
   },
   {
     q: "How do I get the money?",
@@ -232,63 +236,59 @@ export default function HomePage() {
               Pricing
             </p>
             <h2 className="mt-2 text-3xl font-bold tracking-tight md:text-4xl">
-              Free to start. Fee at cash-out.
+              No surprises at cash-out
             </h2>
             <p className="mt-3 max-w-xl text-[var(--ink-soft)]">
-              Contributors pay nothing extra. Korvio takes{" "}
-              <strong className="text-[var(--ink)]">{PLATFORM_FEE_PERCENT_LABEL}</strong> when you
-              withdraw.
+              Contributors send exactly what they choose. When you withdraw, one{" "}
+              <strong className="text-[var(--ink)]">{PLATFORM_FEE_PERCENT_LABEL}</strong> fee
+              covers Korvio and the transfer to your MTN or Airtel — no second charge at payout.
             </p>
 
-            <div className="mt-10 grid gap-5 lg:grid-cols-[1.1fr_1fr]">
-              <div className="grid gap-4 sm:grid-cols-3">
-                <article className="card p-5 text-center sm:col-span-1">
-                  <p className="text-xs font-medium uppercase tracking-wide text-[var(--ink-soft)]">
-                    Create
-                  </p>
-                  <p className="landing-stat-value mt-2">UGX 0</p>
-                </article>
-                <article className="card p-5 text-center sm:col-span-1">
-                  <p className="text-xs font-medium uppercase tracking-wide text-[var(--ink-soft)]">
-                    Contribute
-                  </p>
-                  <p className="landing-stat-value mt-2">UGX 0</p>
-                </article>
-                <article className="card border-[color-mix(in_srgb,var(--brand)_30%,transparent)] p-5 text-center sm:col-span-3">
-                  <p className="text-xs font-medium uppercase tracking-wide text-[var(--ink-soft)]">
-                    Cash-out fee
-                  </p>
-                  <p className="mt-2 text-4xl font-extrabold tracking-tight text-[var(--brand)]">
-                    {PLATFORM_FEE_PERCENT_LABEL}
-                  </p>
-                  <p className="mt-2 text-sm text-[var(--ink-soft)]">
-                    Shown before you confirm. Network costs included.
-                  </p>
-                </article>
+            <article className="card mt-8 p-6">
+              <p className="text-sm font-semibold text-[var(--ink-soft)]">Example withdrawal</p>
+              <div className="mt-4 space-y-3 text-sm">
+                <div className="flex justify-between gap-4">
+                  <span className="text-[var(--ink-soft)]">Collected in your wallet</span>
+                  <span className="font-semibold">{formatMoney(1_000_000, "UGX")}</span>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <span className="text-[var(--ink-soft)]">
+                    Withdrawal fee ({PLATFORM_FEE_PERCENT_LABEL}, incl. transfer)
+                  </span>
+                  <span className="font-semibold text-[var(--danger)]">
+                    − {formatMoney(calculateCashoutNet(1_000_000).platformFee, "UGX")}
+                  </span>
+                </div>
+                <div className="flex justify-between gap-4 border-t border-[var(--line)] pt-3">
+                  <span className="font-semibold">You receive on MoMo</span>
+                  <span className="text-lg font-bold text-[var(--success)]">
+                    {formatMoney(calculateCashoutNet(1_000_000).netAmount, "UGX")}
+                  </span>
+                </div>
               </div>
+            </article>
 
-              <article className="card p-6">
-                <h3 className="font-bold">Cash-out preview</h3>
-                <ul className="mt-4 space-y-3">
-                  {PRICING_EXAMPLES.map((amount) => {
-                    const { platformFee, netAmount } = calculateCashoutNet(amount);
-                    return (
-                      <li key={amount} className="rounded-xl bg-[var(--bg)] px-4 py-3 text-sm">
-                        <div className="flex items-center justify-between gap-3">
-                          <span className="font-semibold">{formatMoney(amount, "UGX")}</span>
-                          <span className="text-[var(--ink-soft)]">
-                            − {formatMoney(platformFee, "UGX")}
-                          </span>
-                          <span className="font-bold text-[var(--success)]">
-                            {formatMoney(netAmount, "UGX")}
-                          </span>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </article>
-            </div>
+            <article className="card mt-6 p-6">
+              <h3 className="font-bold">More examples</h3>
+              <ul className="mt-4 space-y-3">
+                {PRICING_EXAMPLES.map((amount) => {
+                  const { platformFee, netAmount } = calculateCashoutNet(amount);
+                  return (
+                    <li key={amount} className="rounded-xl bg-[var(--bg)] px-4 py-3 text-sm">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="font-semibold">{formatMoney(amount, "UGX")}</span>
+                        <span className="text-[var(--ink-soft)]">
+                          − {formatMoney(platformFee, "UGX")}
+                        </span>
+                        <span className="font-bold text-[var(--success)]">
+                          {formatMoney(netAmount, "UGX")}
+                        </span>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </article>
 
             <div className="mt-8">
               <KorvioDisclaimer />
