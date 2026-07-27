@@ -31,6 +31,7 @@ type Props = {
   fundraisingMode: "GOAL" | "OPEN";
   availableBalance: number;
   minCashoutAmount: number;
+  effectiveMinCashout: number;
   initialCashouts: Cashout[];
   canRequestCashout: boolean;
   canCloseCampaign: boolean;
@@ -52,6 +53,7 @@ export function CampaignWalletPanel({
   fundraisingMode,
   availableBalance,
   minCashoutAmount,
+  effectiveMinCashout,
   initialCashouts,
   canRequestCashout,
   canCloseCampaign: canClose,
@@ -84,6 +86,8 @@ export function CampaignWalletPanel({
 
   const isClosed = ["COMPLETED", "CLOSED"].includes(status);
   const openMode = fundraisingMode === "OPEN";
+  const isFinalPayout =
+    isClosed && balance > 0 && balance < minCashoutAmount && effectiveMinCashout === balance;
 
   const receiverSummary = payoutRecipientName.trim()
     ? `${payoutRecipientName.trim()} (${payoutPhone || "no number yet"})`
@@ -185,6 +189,9 @@ export function CampaignWalletPanel({
           <p className="mt-4 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400">
             Campaign is {status === "COMPLETED" ? "complete" : "closed"}. New contributions are
             stopped.
+            {isFinalPayout
+              ? " You can withdraw the remaining balance below — Korvio still needs to approve it."
+              : null}
           </p>
         ) : null}
 
@@ -215,8 +222,16 @@ export function CampaignWalletPanel({
           </div>
         ) : null}
 
-        {canRequest && balance >= minCashoutAmount ? (
+        {canRequest && balance >= effectiveMinCashout ? (
           <div className="mt-6 space-y-4 border-t border-[var(--dash-border)] pt-6">
+            {isFinalPayout ? (
+              <p className="text-sm text-[var(--dash-muted)]">
+                Final withdrawal — the full remaining balance of{" "}
+                {formatMoney(balance, currency)} is below the usual{" "}
+                {formatMoney(minCashoutAmount, currency)} minimum, but you can cash it out now that
+                the campaign is closed.
+              </p>
+            ) : null}
             <div>
               <Label>Amount to withdraw</Label>
               <div className="mt-1 flex gap-2">
@@ -224,18 +239,22 @@ export function CampaignWalletPanel({
                   inputMode="numeric"
                   value={cashoutAmount}
                   onChange={(e) => setCashoutAmount(e.target.value)}
+                  readOnly={isFinalPayout}
                 />
-                <button
-                  type="button"
-                  className="dash-btn-secondary shrink-0 text-sm"
-                  onClick={() => setCashoutAmount(String(balance))}
-                >
-                  Max
-                </button>
+                {!isFinalPayout ? (
+                  <button
+                    type="button"
+                    className="dash-btn-secondary shrink-0 text-sm"
+                    onClick={() => setCashoutAmount(String(balance))}
+                  >
+                    Max
+                  </button>
+                ) : null}
               </div>
               <p className="mt-1 text-xs text-[var(--dash-muted)]">
-                Minimum {formatMoney(minCashoutAmount, currency)} · Remaining after request:{" "}
-                {formatMoney(Math.max(0, balance - parsedAmount), currency)}
+                {isFinalPayout
+                  ? `Full balance · Receiver gets ${formatMoney(preview.netAmount, currency)} after fee`
+                  : `Minimum ${formatMoney(minCashoutAmount, currency)} · Remaining after request: ${formatMoney(Math.max(0, balance - parsedAmount), currency)}`}
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -284,7 +303,7 @@ export function CampaignWalletPanel({
               className="dash-btn-primary inline-flex items-center gap-2"
               onClick={() => setCashoutModalOpen(true)}
               disabled={
-                parsedAmount < minCashoutAmount ||
+                parsedAmount < effectiveMinCashout ||
                 parsedAmount > balance ||
                 payoutPhone.trim().length < 10
               }
@@ -292,10 +311,11 @@ export function CampaignWalletPanel({
               Request cash-out
             </button>
           </div>
-        ) : balance > 0 && balance < minCashoutAmount ? (
+        ) : balance > 0 && !canRequest ? (
           <p className="mt-4 text-sm text-[var(--dash-muted)]">
-            Minimum cash-out is {formatMoney(minCashoutAmount, currency)}. Keep collecting until
-            your wallet reaches that amount.
+            {isClosed
+              ? "No balance available to withdraw."
+              : `Minimum cash-out is ${formatMoney(minCashoutAmount, currency)}. Collect more contributions or close the campaign to withdraw smaller remaining amounts.`}
           </p>
         ) : null}
 

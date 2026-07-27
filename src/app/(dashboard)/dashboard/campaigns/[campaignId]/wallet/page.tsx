@@ -35,6 +35,7 @@ export default async function CampaignWalletPage({
         fundraisingMode={wallet.campaign.fundraisingMode ?? "GOAL"}
         availableBalance={wallet.availableBalance}
         minCashoutAmount={wallet.minCashoutAmount}
+        effectiveMinCashout={wallet.effectiveMinCashout}
         canRequestCashout={wallet.canRequestCashout}
         canCloseCampaign={access.has("campaign.close") && canCloseCampaign(wallet.campaign.status)}
         initialCashouts={wallet.cashouts.map((c) => ({

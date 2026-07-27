@@ -4,6 +4,7 @@ import { recalculateCampaignWallet } from "@/lib/campaigns/totals";
 import {
   MIN_CASHOUT_AMOUNT,
   canCampaignRequestCashout,
+  minCashoutForCampaign,
 } from "@/lib/campaigns/cashout-rules";
 import { calculateCashoutNet } from "@/lib/payments/fees";
 import { formatMoney } from "@/lib/utils/money";
@@ -20,6 +21,11 @@ export async function getCampaignWallet(campaignId: string) {
     ["PENDING", "PROCESSING"].includes(c.status),
   );
 
+  const effectiveMinCashout = minCashoutForCampaign({
+    status: campaign.status,
+    availableBalance: campaign.availableBalance,
+  });
+
   const { platformFee, netAmount } = calculateCashoutNet(campaign.availableBalance);
 
   return {
@@ -31,6 +37,7 @@ export async function getCampaignWallet(campaignId: string) {
     pendingCashout,
     cashouts,
     minCashoutAmount: MIN_CASHOUT_AMOUNT,
+    effectiveMinCashout,
     cashoutPreview: { platformFee, netAmount },
     canRequestCashout: canCampaignRequestCashout({
       status: campaign.status,
@@ -49,6 +56,10 @@ export async function requestCampaignCashout(input: {
   amount?: number;
 }) {
   const wallet = await getCampaignWallet(input.campaignId);
+  const effectiveMin = minCashoutForCampaign({
+    status: wallet.campaign.status,
+    availableBalance: wallet.availableBalance,
+  });
 
   if (
     !canCampaignRequestCashout({
@@ -74,9 +85,11 @@ export async function requestCampaignCashout(input: {
     throw new Error("Invalid cash-out amount");
   }
 
-  if (amount < MIN_CASHOUT_AMOUNT) {
+  if (amount < effectiveMin) {
     throw new Error(
-      `Minimum cash-out is ${formatMoney(MIN_CASHOUT_AMOUNT, wallet.campaign.currency)}`,
+      effectiveMin === wallet.availableBalance
+        ? `Withdraw the full remaining balance (${formatMoney(wallet.availableBalance, wallet.campaign.currency)})`
+        : `Minimum cash-out is ${formatMoney(MIN_CASHOUT_AMOUNT, wallet.campaign.currency)}`,
     );
   }
 
