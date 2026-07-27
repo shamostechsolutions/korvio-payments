@@ -16,6 +16,7 @@ import {
 } from "@/lib/campaigns/fundraising";
 import { prisma } from "@/lib/db";
 import { ContributionBars } from "@/components/dashboard/contribution-bars";
+import { CampaignDeletionPanel } from "@/components/dashboard/campaign-deletion-panel";
 import { DashStatCard } from "@/components/dashboard/dash-stat-card";
 import { ShareCampaignPanel } from "@/components/dashboard/share-campaign-panel";
 import { ProgressBar } from "@/components/campaign/progress-bar";
@@ -103,6 +104,12 @@ export default async function CampaignOverviewPage({
           {" — "}
           Your campaign is not public yet. Korvio will review it before contributions can start.
         </div>
+      ) : campaign.deletionRequestedAt ? (
+        <div className="rounded-xl border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm text-[var(--dash-ink)]">
+          <span className="font-semibold text-red-400">Deletion requested</span>
+          {" — "}
+          Korvio is reviewing your request to remove this campaign. It remains live until approved.
+        </div>
       ) : null}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
@@ -114,13 +121,15 @@ export default async function CampaignOverviewPage({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link
-            href={`/c/${campaign.campaignCode}`}
-            target="_blank"
-            className={`dash-btn-secondary ${!isLive ? "pointer-events-none opacity-50" : ""}`}
-          >
-            Preview page
-          </Link>
+          {isLive ? (
+            <Link
+              href={`/c/${campaign.campaignCode}`}
+              target="_blank"
+              className="dash-btn-secondary"
+            >
+              Preview page
+            </Link>
+          ) : null}
           <Link href={`/dashboard/campaigns/${campaign.id}/wallet`} className="dash-btn-primary">
             Wallet & cash-out
           </Link>
@@ -238,7 +247,10 @@ export default async function CampaignOverviewPage({
             </li>
           </ul>
           <p className="mt-4 rounded-lg bg-[var(--dash-bg)] px-3 py-2 text-xs text-[var(--dash-muted)]">
-            Status: <span className="font-semibold text-teal-400">{campaign.status}</span>
+            Status:{" "}
+            <span className="font-semibold text-teal-400">
+              {isLive ? campaign.status : "Pending approval"}
+            </span>
           </p>
         </section>
       </div>
@@ -301,6 +313,14 @@ export default async function CampaignOverviewPage({
           isLive={isLive}
         />
       </div>
+
+      <CampaignDeletionPanel
+        campaignId={campaign.id}
+        campaignName={campaign.name}
+        status={campaign.status}
+        deletionRequestedAt={campaign.deletionRequestedAt?.toISOString() ?? null}
+        isOwner={access.role === "OWNER"}
+      />
     </div>
   );
 }

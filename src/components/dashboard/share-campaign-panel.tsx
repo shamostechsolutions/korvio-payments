@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Copy, ExternalLink } from "lucide-react";
+import { Clock, Copy, ExternalLink } from "lucide-react";
 
 type Props = {
   publicUrl: string;
@@ -18,13 +18,36 @@ export function ShareCampaignPanel({ publicUrl, campaignCode, isLive = true }: P
     setTimeout(() => setCopied(false), 2000);
   }
 
+  if (!isLive) {
+    return (
+      <div className="dash-card p-5">
+        <div className="flex items-start gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-400">
+            <Clock className="h-5 w-5" />
+          </span>
+          <div>
+            <h2 className="text-base font-semibold text-[var(--dash-ink)]">Not live yet</h2>
+            <p className="mt-1 text-sm text-[var(--dash-muted)]">
+              Your campaign is with Korvio for review. You cannot share a public link until it is
+              approved — sharing now would send people to a page that does not work.
+            </p>
+            <p className="mt-3 text-xs font-medium uppercase tracking-wide text-[var(--dash-muted)]">
+              Reference code · {campaignCode}
+            </p>
+            <p className="mt-4 text-sm text-[var(--dash-muted)]">
+              Check back here — your share link will appear once Korvio approves the campaign.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="dash-card p-5">
       <h2 className="text-base font-semibold text-[var(--dash-ink)]">Share campaign</h2>
       <p className="mt-1 text-sm text-[var(--dash-muted)]">
-        {isLive
-          ? "Send this link to your group. Contributors join and pay on the web — no app needed."
-          : "Your campaign is awaiting Korvio approval. The public link will work after we review and approve it."}
+        Send this link to your group. Contributors join and pay on the web — no app needed.
       </p>
       <p className="mt-3 text-xs font-medium uppercase tracking-wide text-[var(--dash-muted)]">
         Code · {campaignCode}
@@ -33,23 +56,14 @@ export function ShareCampaignPanel({ publicUrl, campaignCode, isLive = true }: P
         {publicUrl}
       </p>
       <div className="mt-4 flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => void copyLink()}
-          className="dash-btn-secondary"
-          disabled={!isLive}
-        >
+        <button type="button" onClick={() => void copyLink()} className="dash-btn-secondary">
           <Copy className="h-4 w-4" />
           {copied ? "Copied" : "Copy link"}
         </button>
-        {isLive ? (
-          <a href={publicUrl} target="_blank" rel="noreferrer" className="dash-btn-primary">
-            <ExternalLink className="h-4 w-4" />
-            Open page
-          </a>
-        ) : (
-          <span className="dash-btn-primary pointer-events-none opacity-50">Awaiting approval</span>
-        )}
+        <a href={publicUrl} target="_blank" rel="noreferrer" className="dash-btn-primary">
+          <ExternalLink className="h-4 w-4" />
+          Open page
+        </a>
       </div>
     </div>
   );

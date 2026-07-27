@@ -222,6 +222,7 @@ model User {
   requestedCashouts Cashout[]            @relation("CashoutRequester")
   createdReminders Reminder[]             @relation("ReminderCreator")
   verifiedInKinds  InKindContribution[]   @relation("InKindVerifier")
+  campaignDeletionRequests Campaign[]     @relation("CampaignDeletionRequests")
 
   @@map("users")
 }
@@ -297,10 +298,13 @@ model Campaign {
   publicRemindersEnabled      Boolean                    @default(false) @map("public_reminders_enabled")
   minimumPledgeAmount         Int?                       @map("minimum_pledge_amount")
   manualPaymentVerifyThreshold Int?                      @map("manual_payment_verify_threshold")
+  deletionRequestedAt         DateTime?                  @map("deletion_requested_at")
+  deletionRequestedById       String?                    @map("deletion_requested_by_id")
   createdAt                   DateTime                   @default(now()) @map("created_at")
   updatedAt                   DateTime                   @updatedAt @map("updated_at")
 
-  owner           User                     @relation("CampaignOwner", fields: [ownerId], references: [id])
+  owner                 User                     @relation("CampaignOwner", fields: [ownerId], references: [id])
+  deletionRequestedBy   User?                    @relation("CampaignDeletionRequests", fields: [deletionRequestedById], references: [id], onDelete: SetNull)
   administrators  CampaignAdministrator[]
   contributors    Contributor[]
   pledges         Pledge[]

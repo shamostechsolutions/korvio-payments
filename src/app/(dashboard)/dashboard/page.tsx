@@ -15,6 +15,7 @@ export default async function DashboardHomePage() {
 
   const campaigns = await prisma.campaign.findMany({
     where: {
+      status: { not: "CANCELLED" },
       OR: [
         { ownerId: user.id },
         { administrators: { some: { userId: user.id, status: "ACTIVE" } } },
@@ -113,7 +114,11 @@ export default async function DashboardHomePage() {
                       </p>
                     </div>
                     <span className="rounded-full bg-teal-500/10 px-3 py-1 text-xs font-semibold text-teal-400">
-                      {campaign.status === "DRAFT" ? "Pending approval" : campaign.status}
+                      {campaign.status === "DRAFT"
+                        ? "Pending approval"
+                        : campaign.deletionRequestedAt
+                          ? "Deletion requested"
+                          : campaign.status}
                     </span>
                   </div>
                   <div className="mt-4 grid gap-2 sm:grid-cols-3">

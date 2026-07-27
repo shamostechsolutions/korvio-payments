@@ -11,6 +11,7 @@ type Props = {
   initialAllowSupport: boolean;
   publicUrl: string;
   organiserName: string;
+  isLive?: boolean;
 };
 
 export function PublicPageSettings({
@@ -20,6 +21,7 @@ export function PublicPageSettings({
   initialAllowSupport,
   publicUrl,
   organiserName,
+  isLive = true,
 }: Props) {
   const [imageUrl, setImageUrl] = useState(initialImageUrl || "");
   const [isVerified, setIsVerified] = useState(initialVerified);
@@ -89,20 +91,29 @@ export function PublicPageSettings({
     <div className="space-y-6">
       <DashCard>
         <h2 className="text-lg font-bold text-[var(--dash-ink)]">Public campaign page</h2>
-        <p className="mt-1 text-sm text-[var(--dash-muted)]">
-          Customise how your campaign appears at{" "}
-          <a href={publicUrl} target="_blank" rel="noreferrer" className="font-medium text-teal-400">
-            {publicUrl.replace(/^https?:\/\//, "")}
-          </a>
-        </p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <button type="button" className="dash-btn-secondary" onClick={() => void copyLink()}>
-            Copy public link
-          </button>
-          <a href={publicUrl} target="_blank" rel="noreferrer" className="dash-btn-primary">
-            Preview page
-          </a>
-        </div>
+        {isLive ? (
+          <>
+            <p className="mt-1 text-sm text-[var(--dash-muted)]">
+              Customise how your campaign appears at{" "}
+              <a href={publicUrl} target="_blank" rel="noreferrer" className="font-medium text-teal-400">
+                {publicUrl.replace(/^https?:\/\//, "")}
+              </a>
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button type="button" className="dash-btn-secondary" onClick={() => void copyLink()}>
+                Copy public link
+              </button>
+              <a href={publicUrl} target="_blank" rel="noreferrer" className="dash-btn-primary">
+                Preview page
+              </a>
+            </div>
+          </>
+        ) : (
+          <p className="mt-1 text-sm text-[var(--dash-muted)]">
+            Prepare your page settings now. Your public link and preview will be available after
+            Korvio approves the campaign.
+          </p>
+        )}
 
         <div className="mt-6 space-y-4">
           <div>
@@ -148,7 +159,9 @@ export function PublicPageSettings({
       <DashCard>
         <h2 className="text-lg font-bold text-[var(--dash-ink)]">Post an update</h2>
         <p className="mt-1 text-sm text-[var(--dash-muted)]">
-          Share progress with contributors — shown on your public campaign page.
+          {isLive
+            ? "Share progress with contributors — shown on your public campaign page."
+            : "Updates can be published once your campaign is approved and live."}
         </p>
         <div className="mt-4 space-y-3">
           <Textarea
@@ -156,12 +169,13 @@ export function PublicPageSettings({
             onChange={(e) => setUpdateBody(e.target.value)}
             rows={4}
             placeholder="Thank you everyone for your support so far..."
+            disabled={!isLive}
           />
           <button
             type="button"
             className="dash-btn-primary"
             onClick={() => void postUpdate()}
-            disabled={loading || !updateBody.trim()}
+            disabled={loading || !updateBody.trim() || !isLive}
           >
             Publish update
           </button>

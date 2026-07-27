@@ -88,7 +88,7 @@ export default function NewCampaignPage() {
       <div className="dash-card p-6 md:p-8">
         <DashPageHeader
           title="Create a campaign"
-          description="Choose a fundraising goal or open contributions. Korvio generates a public page link you can share with your group."
+          description="Choose a fundraising goal or open contributions. After Korvio reviews and approves your campaign, you will get a public link to share."
         />
 
         <form action={onSubmit} className="mt-8 grid gap-4 md:grid-cols-2">

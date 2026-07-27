@@ -16,7 +16,7 @@ const STEPS = [
   {
     step: "1",
     title: "Create a campaign",
-    body: "Add your goal, story, and organiser details. You get a public page and shareable link instantly.",
+    body: "Add your goal, story, and organiser details. Once Korvio approves your campaign, you get a public page and shareable link.",
   },
   {
     step: "2",

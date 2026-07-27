@@ -33,9 +33,11 @@ const actionConfig: Record<
 export function CampaignAdminActions({
   campaignId,
   status,
+  deletionRequestedAt,
 }: {
   campaignId: string;
   status: string;
+  deletionRequestedAt?: Date | string | null;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState<PendingAction | null>(null);
@@ -85,6 +87,9 @@ export function CampaignAdminActions({
   return (
     <>
       <div className="flex flex-col gap-2">
+        {deletionRequestedAt ? (
+          <p className="text-xs font-medium text-red-400">Deletion requested by organiser</p>
+        ) : null}
         <div className="flex flex-wrap gap-2">
           {status === "DRAFT" ? (
             <button

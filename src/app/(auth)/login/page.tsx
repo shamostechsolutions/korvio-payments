@@ -72,10 +72,6 @@ function LoginForm() {
         <Link href="/register" className="font-semibold text-[var(--brand)]">
           Create an account
         </Link>
-        {" · "}
-        <Link href="/admininterface/login" className="font-semibold text-[var(--brand-soft)]">
-          Admin login
-        </Link>
       </p>
     </div>
   );

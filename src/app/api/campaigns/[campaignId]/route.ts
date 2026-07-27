@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import { writeAuditLog } from "@/lib/audit";
 import { getSessionUser } from "@/lib/auth/session";
 import { getCampaignAccess } from "@/lib/campaigns/access";
+import { canOrganiserDeleteDraft } from "@/lib/campaigns/delete";
 import { prisma } from "@/lib/db";
 
 export async function GET(
@@ -69,4 +71,61 @@ export async function GET(
     expenses: access.has("expenses.record") || access.canViewAmounts ? expenses : [],
     statusCounts,
   });
+}
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ campaignId: string }> },
+) {
+  try {
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const { campaignId } = await params;
+    const access = await getCampaignAccess(campaignId, user);
+    if (!access) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    if (access.role !== "OWNER") {
+      return NextResponse.json({ error: "Only the campaign owner can delete this campaign" }, { status: 403 });
+    }
+
+    const campaign = access.campaign;
+    if (!canOrganiserDeleteDraft(campaign)) {
+      return NextResponse.json(
+        {
+          error:
+            "Only pending campaigns can be deleted directly. Request deletion and Korvio will remove live campaigns.",
+        },
+        { status: 400 },
+      );
+    }
+
+    const successfulPayments = await prisma.payment.count({
+      where: { campaignId: campaign.id, paymentStatus: "SUCCESSFUL" },
+    });
+    if (successfulPayments > 0) {
+      return NextResponse.json(
+        { error: "This campaign has received payments and cannot be deleted directly." },
+        { status: 400 },
+      );
+    }
+
+    await prisma.campaign.update({
+      where: { id: campaign.id },
+      data: { status: "CANCELLED" },
+    });
+
+    await writeAuditLog({
+      campaignId: campaign.id,
+      userId: user.id,
+      action: "campaign_deleted_by_owner",
+      entityType: "campaign",
+      entityId: campaign.id,
+      previousData: { status: campaign.status, name: campaign.name },
+      newData: { status: "CANCELLED" },
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch {
+    return NextResponse.json({ error: "Unable to delete campaign" }, { status: 500 });
+  }
 }

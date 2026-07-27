@@ -66,8 +66,7 @@ export default function AdminLoginPage() {
               type="email"
               required
               autoComplete="username"
-              defaultValue="shamos@korvio.com"
-              placeholder="shamos@korvio.com"
+              placeholder="you@korvio.com"
             />
           </div>
           <div>

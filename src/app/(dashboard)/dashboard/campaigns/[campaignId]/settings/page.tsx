@@ -22,12 +22,23 @@ export default async function SettingsPage({
     "http://localhost:3000";
   const publicUrl = `${appUrl.replace(/\/$/, "")}/c/${c.campaignCode}`;
 
+  const isLive = c.status === "ACTIVE";
+
   return (
     <div className="space-y-6">
       <DashPageHeader
         title="Public page"
         description="Customise your campaign page, post updates, and manage trust badges."
       />
+
+      {!isLive ? (
+        <div className="rounded-xl border border-amber-500/25 bg-amber-500/10 px-4 py-3 text-sm text-[var(--dash-ink)]">
+          <span className="font-semibold text-amber-400">Pending approval</span>
+          {" — "}
+          Your public page is not live yet. You can prepare settings below, but do not share any
+          link until Korvio approves the campaign.
+        </div>
+      ) : null}
 
       {access.role === "OWNER" ? (
         <PublicPageSettings
@@ -37,6 +48,7 @@ export default async function SettingsPage({
           initialAllowSupport={c.allowSupportMessages}
           publicUrl={publicUrl}
           organiserName={c.organiserName}
+          isLive={isLive}
         />
       ) : (
         <DashCard>

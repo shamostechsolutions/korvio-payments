@@ -32,6 +32,7 @@ export default async function AdminCampaignsPage() {
   });
 
   const pending = campaigns.filter((c) => c.status === "DRAFT");
+  const deletionRequests = campaigns.filter((c) => c.deletionRequestedAt);
 
   return (
     <div className="space-y-6">
@@ -39,8 +40,38 @@ export default async function AdminCampaignsPage() {
         <h1 className="text-2xl font-bold tracking-tight text-[var(--dash-ink)]">All campaigns</h1>
         <p className="mt-1 text-sm text-[var(--dash-muted)]">
           {campaigns.length} on platform · {pending.length} awaiting your approval
+          {deletionRequests.length ? ` · ${deletionRequests.length} deletion request${deletionRequests.length === 1 ? "" : "s"}` : ""}
         </p>
       </div>
+
+      {deletionRequests.length ? (
+        <section className="dash-card border-red-500/20 p-5">
+          <h2 className="text-base font-semibold text-red-400">Deletion requests</h2>
+          <p className="mt-1 text-sm text-[var(--dash-muted)]">
+            Organisers asked to remove these live campaigns. Review and delete when appropriate.
+          </p>
+          <ul className="mt-4 space-y-3">
+            {deletionRequests.map((c) => (
+              <li
+                key={c.id}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--dash-border)] bg-[var(--dash-bg)] px-4 py-3"
+              >
+                <div>
+                  <p className="font-medium text-[var(--dash-ink)]">{c.name}</p>
+                  <p className="text-xs text-[var(--dash-muted)]">
+                    {c.campaignCode} · requested {format(c.deletionRequestedAt!, "MMM d, yyyy · h:mm a")}
+                  </p>
+                </div>
+                <CampaignAdminActions
+                  campaignId={c.id}
+                  status={c.status}
+                  deletionRequestedAt={c.deletionRequestedAt}
+                />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       {pending.length ? (
         <section className="dash-card border-amber-500/20 p-5">
@@ -61,7 +92,7 @@ export default async function AdminCampaignsPage() {
                     {c.campaignCode} · {c.organiserName} · {format(c.createdAt, "MMM d, yyyy")}
                   </p>
                 </div>
-                <CampaignAdminActions campaignId={c.id} status={c.status} />
+                <CampaignAdminActions campaignId={c.id} status={c.status} deletionRequestedAt={c.deletionRequestedAt} />
               </li>
             ))}
           </ul>
@@ -126,9 +157,16 @@ export default async function AdminCampaignsPage() {
                 </td>
                 <td className="py-3 pr-4">
                   <span className={statusBadge(c.status)}>{statusLabel(c.status)}</span>
+                  {c.deletionRequestedAt ? (
+                    <p className="mt-1 text-xs font-medium text-red-400">Deletion requested</p>
+                  ) : null}
                 </td>
                 <td className="py-3">
-                  <CampaignAdminActions campaignId={c.id} status={c.status} />
+                  <CampaignAdminActions
+                    campaignId={c.id}
+                    status={c.status}
+                    deletionRequestedAt={c.deletionRequestedAt}
+                  />
                 </td>
               </tr>
             ))}
@@ -194,7 +232,7 @@ export default async function AdminCampaignsPage() {
 
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--dash-border)] pt-3">
               <CampaignVerifyToggle campaignId={c.id} isVerified={c.isVerified} />
-              <CampaignAdminActions campaignId={c.id} status={c.status} />
+              <CampaignAdminActions campaignId={c.id} status={c.status} deletionRequestedAt={c.deletionRequestedAt} />
             </div>
           </article>
         ))}
