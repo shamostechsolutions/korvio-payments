@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requirePlatformAdmin } from "@/lib/auth/platform-admin";
 import { approveCashoutViaPawapay, updateCashoutStatus } from "@/lib/admin/cashouts";
+import { PawapayApiError, formatPawapayError } from "@/lib/payments/pawapay/client";
 
 const statusSchema = z.object({
   action: z.literal("update_status").optional(),
@@ -49,6 +50,9 @@ export async function PATCH(
     }
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues[0]?.message }, { status: 400 });
+    }
+    if (error instanceof PawapayApiError) {
+      return NextResponse.json({ error: formatPawapayError(error) }, { status: 400 });
     }
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
