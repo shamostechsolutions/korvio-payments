@@ -3,8 +3,10 @@ import { format } from "date-fns";
 import { prisma } from "@/lib/db";
 import { CashoutActions } from "@/components/admin/cashout-actions";
 import { formatMoney } from "@/lib/utils/money";
+import { isPawapayPayoutsEnabled } from "@/lib/payments/pawapay/config";
 
 export default async function AdminCashoutsPage() {
+  const pawapayEnabled = isPawapayPayoutsEnabled();
   const cashouts = await prisma.cashout.findMany({
     orderBy: { requestedAt: "desc" },
     include: {
@@ -20,7 +22,10 @@ export default async function AdminCashoutsPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-[var(--dash-ink)]">Cash-outs</h1>
         <p className="mt-1 text-sm text-[var(--dash-muted)]">
-          {pending.length} awaiting payout · send MoMo manually then mark paid.
+          {pending.length} awaiting your approval ·{" "}
+          {pawapayEnabled
+            ? "Review each request, then approve to send via PawaPay."
+            : "Send MoMo manually, then mark paid."}
         </p>
       </div>
 
@@ -30,7 +35,7 @@ export default async function AdminCashoutsPage() {
             <tr className="border-b border-[var(--dash-border)] text-[var(--dash-muted)]">
               <th className="pb-3 pr-4 font-medium">Campaign</th>
               <th className="pb-3 pr-4 font-medium">Requested by</th>
-              <th className="pb-3 pr-4 font-medium">Payout</th>
+              <th className="pb-3 pr-4 font-medium">Receiver</th>
               <th className="pb-3 pr-4 font-medium">Net amount</th>
               <th className="pb-3 pr-4 font-medium">Status</th>
               <th className="pb-3 pr-4 font-medium">Requested</th>
@@ -62,7 +67,14 @@ export default async function AdminCashoutsPage() {
                     <span className="block text-xs">{c.requestedBy.phoneNumber}</span>
                   </td>
                   <td className="py-3 pr-4">
-                    <span className="font-medium text-[var(--dash-ink)]">{c.payoutPhone}</span>
+                    {c.payoutRecipientName ? (
+                      <span className="font-medium text-[var(--dash-ink)]">
+                        {c.payoutRecipientName}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-[var(--dash-muted)]">Not named</span>
+                    )}
+                    <span className="block font-medium text-[var(--dash-ink)]">{c.payoutPhone}</span>
                     <span className="block text-xs text-[var(--dash-muted)]">
                       {c.payoutMethod.replaceAll("_", " ")}
                     </span>
@@ -93,7 +105,14 @@ export default async function AdminCashoutsPage() {
                     {format(c.requestedAt, "MMM d, yyyy · h:mm a")}
                   </td>
                   <td className="py-3">
-                    <CashoutActions cashoutId={c.id} status={c.status} />
+                    <CashoutActions
+                      cashoutId={c.id}
+                      status={c.status}
+                      pawapayEnabled={pawapayEnabled}
+                      payoutPhone={c.payoutPhone}
+                      payoutRecipientName={c.payoutRecipientName}
+                      netAmount={formatMoney(c.netAmount, c.campaign.currency)}
+                    />
                   </td>
                 </tr>
               ))
@@ -141,8 +160,11 @@ export default async function AdminCashoutsPage() {
                   <dd className="text-xs text-[var(--dash-muted)]">{c.requestedBy.phoneNumber}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-[var(--dash-muted)]">Payout</dt>
-                  <dd className="mt-0.5 font-medium text-[var(--dash-ink)]">{c.payoutPhone}</dd>
+                  <dt className="text-xs text-[var(--dash-muted)]">Receiver</dt>
+                  <dd className="mt-0.5 font-medium text-[var(--dash-ink)]">
+                    {c.payoutRecipientName || "Not named"}
+                  </dd>
+                  <dd className="text-xs text-[var(--dash-muted)]">{c.payoutPhone}</dd>
                   <dd className="text-xs text-[var(--dash-muted)]">
                     {c.payoutMethod.replaceAll("_", " ")}
                   </dd>
@@ -166,7 +188,14 @@ export default async function AdminCashoutsPage() {
               </dl>
 
               <div className="border-t border-[var(--dash-border)] pt-3">
-                <CashoutActions cashoutId={c.id} status={c.status} />
+                <CashoutActions
+                  cashoutId={c.id}
+                  status={c.status}
+                  pawapayEnabled={pawapayEnabled}
+                  payoutPhone={c.payoutPhone}
+                  payoutRecipientName={c.payoutRecipientName}
+                  netAmount={formatMoney(c.netAmount, c.campaign.currency)}
+                />
               </div>
             </article>
           ))

@@ -43,6 +43,7 @@ export default async function CampaignWalletPage({
           platformFee: c.platformFee,
           netAmount: c.netAmount,
           payoutPhone: c.payoutPhone,
+          payoutRecipientName: c.payoutRecipientName,
           status: c.status,
           requestedAt: c.requestedAt.toISOString(),
           processedAt: c.processedAt?.toISOString() ?? null,

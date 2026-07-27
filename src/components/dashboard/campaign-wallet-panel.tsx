@@ -17,6 +17,7 @@ type Cashout = {
   platformFee: number;
   netAmount: number;
   payoutPhone: string;
+  payoutRecipientName: string | null;
   status: string;
   requestedAt: string;
   processedAt: string | null;
@@ -55,7 +56,8 @@ export function CampaignWalletPanel({
   canRequestCashout,
   canCloseCampaign: canClose,
 }: Props) {
-  const [payoutPhone, setPayoutPhone] = useState(organiserPhone);
+  const [payoutPhone, setPayoutPhone] = useState("");
+  const [payoutRecipientName, setPayoutRecipientName] = useState("");
   const [payoutMethod, setPayoutMethod] = useState<"MTN_MOMO" | "AIRTEL_MONEY">("MTN_MOMO");
   const [cashoutAmount, setCashoutAmount] = useState(String(availableBalance));
   const [cashouts, setCashouts] = useState(initialCashouts);
@@ -82,6 +84,10 @@ export function CampaignWalletPanel({
 
   const isClosed = ["COMPLETED", "CLOSED"].includes(status);
   const openMode = fundraisingMode === "OPEN";
+
+  const receiverSummary = payoutRecipientName.trim()
+    ? `${payoutRecipientName.trim()} (${payoutPhone || "no number yet"})`
+    : payoutPhone || "the receiver you enter below";
 
   async function closeCampaign() {
     setLoading("close");
@@ -115,6 +121,7 @@ export function CampaignWalletPanel({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         payoutPhone,
+        payoutRecipientName: payoutRecipientName.trim() || undefined,
         payoutMethod,
         amount: parsedAmount,
       }),
@@ -132,7 +139,7 @@ export function CampaignWalletPanel({
     setCanRequest(newBalance >= minCashoutAmount);
     setCashoutModalOpen(false);
     setMessage(
-      `Cash-out requested. ${formatMoney(data.cashout.netAmount, currency)} will be sent to ${data.cashout.payoutPhone} after Korvio processes it (usually within 1 business day).`,
+      `Cash-out request submitted. ${formatMoney(data.cashout.netAmount, currency)} will be sent to ${data.cashout.payoutRecipientName ? `${data.cashout.payoutRecipientName} · ` : ""}${data.cashout.payoutPhone} after Korvio approves it.`,
     );
   }
 
@@ -166,7 +173,7 @@ export function CampaignWalletPanel({
           </div>
           <div className="rounded-xl border border-[var(--dash-border)] bg-[var(--dash-bg)] p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-[var(--dash-muted)]">
-              You receive
+              Receiver gets
             </p>
             <p className="mt-2 text-2xl font-bold text-emerald-400">
               {formatMoney(preview.netAmount, currency)}
@@ -232,13 +239,32 @@ export function CampaignWalletPanel({
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <Label>Receiver name</Label>
+                <Input
+                  value={payoutRecipientName}
+                  onChange={(e) => setPayoutRecipientName(e.target.value)}
+                  placeholder="e.g. Tent vendor, hospital, bride's aunt"
+                />
+                <p className="mt-1 text-xs text-[var(--dash-muted)]">
+                  Who should receive this payout? It does not have to be you — enter the vendor,
+                  beneficiary, or group member.
+                </p>
+              </div>
               <div>
-                <Label>Payout mobile money number</Label>
+                <Label>Receiver mobile money number</Label>
                 <Input
                   value={payoutPhone}
                   onChange={(e) => setPayoutPhone(e.target.value)}
                   placeholder="256700000000"
                 />
+                <button
+                  type="button"
+                  className="mt-2 text-xs font-medium text-teal-400 hover:underline"
+                  onClick={() => setPayoutPhone(organiserPhone)}
+                >
+                  Use my number ({organiserPhone})
+                </button>
               </div>
               <div>
                 <Label>Network</Label>
@@ -257,7 +283,11 @@ export function CampaignWalletPanel({
               type="button"
               className="dash-btn-primary inline-flex items-center gap-2"
               onClick={() => setCashoutModalOpen(true)}
-              disabled={parsedAmount < minCashoutAmount || parsedAmount > balance}
+              disabled={
+                parsedAmount < minCashoutAmount ||
+                parsedAmount > balance ||
+                payoutPhone.trim().length < 10
+              }
             >
               Request cash-out
             </button>
@@ -289,7 +319,9 @@ export function CampaignWalletPanel({
               <li key={c.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
                 <div>
                   <p className="font-medium text-[var(--dash-ink)]">
-                    {formatMoney(c.netAmount, currency)} to {c.payoutPhone}
+                    {formatMoney(c.netAmount, currency)} to{" "}
+                    {c.payoutRecipientName ? `${c.payoutRecipientName} · ` : ""}
+                    {c.payoutPhone}
                   </p>
                   <p className="text-xs text-[var(--dash-muted)]">
                     {new Date(c.requestedAt).toLocaleString()} · Gross{" "}
@@ -319,7 +351,7 @@ export function CampaignWalletPanel({
         open={cashoutModalOpen}
         onOpenChange={setCashoutModalOpen}
         title="Confirm cash-out"
-        description={`Withdraw ${formatMoney(parsedAmount, currency)} from the campaign wallet. You will receive ${formatMoney(preview.netAmount, currency)} on ${payoutPhone} after the ${PLATFORM_FEE_PERCENT_LABEL} Korvio fee. This cannot be undone once processing starts.`}
+        description={`Withdraw ${formatMoney(parsedAmount, currency)} from the campaign wallet. After the ${PLATFORM_FEE_PERCENT_LABEL} Korvio fee, ${formatMoney(preview.netAmount, currency)} will be sent to ${receiverSummary} once Korvio approves the request.`}
         confirmLabel="Request cash-out"
         loading={loading === "cashout"}
         onConfirm={requestCashout}

@@ -9,7 +9,11 @@ const TERMINAL_STATUSES = new Set<CashoutStatus>(["COMPLETED", "FAILED", "CANCEL
 export async function publishCashoutLedgerEntry(cashoutId: string) {
   const cashout = await prisma.cashout.findUnique({
     where: { id: cashoutId },
-    include: { campaign: { select: { id: true, organiserName: true, currency: true } } },
+    include: {
+      campaign: {
+        select: { id: true, organiserName: true, currency: true },
+      },
+    },
   });
   if (!cashout?.campaign) return;
 
@@ -17,7 +21,7 @@ export async function publishCashoutLedgerEntry(cashoutId: string) {
     data: {
       campaignId: cashout.campaign.id,
       authorName: cashout.campaign.organiserName,
-      body: `Withdrawal processed: ${formatMoney(cashout.netAmount, cashout.campaign.currency)} sent to the organiser (${formatMoney(cashout.platformFee, cashout.campaign.currency)} Korvio service fee on ${formatMoney(cashout.amount, cashout.campaign.currency)}).`,
+      body: `Withdrawal processed: ${formatMoney(cashout.netAmount, cashout.campaign.currency)} sent to ${cashout.payoutRecipientName ? `${cashout.payoutRecipientName} · ` : ""}${cashout.payoutPhone} (${formatMoney(cashout.platformFee, cashout.campaign.currency)} Korvio service fee on ${formatMoney(cashout.amount, cashout.campaign.currency)}).`,
     },
   });
 }
@@ -63,4 +67,38 @@ export async function updateCashoutStatus(input: {
   });
 
   return updated;
+}
+
+export async function approveCashoutViaPawapay(input: {
+  cashoutId: string;
+  adminUserId: string;
+}) {
+  if (process.env.PAYMENT_PROVIDER !== "pawapay") {
+    throw new Error("PawaPay is not the active payment provider");
+  }
+
+  const cashout = await prisma.cashout.findUniqueOrThrow({
+    where: { id: input.cashoutId },
+  });
+
+  if (cashout.status !== "PENDING") {
+    throw new Error("Only pending cash-outs can be approved");
+  }
+
+  const { initiatePawapayPayoutForCashout } = await import(
+    "@/lib/payments/pawapay/payouts"
+  );
+
+  const result = await initiatePawapayPayoutForCashout(input.cashoutId, input.adminUserId);
+
+  await writeAuditLog({
+    campaignId: cashout.campaignId,
+    userId: input.adminUserId,
+    action: "cashout_approved_for_payout",
+    entityType: "cashout",
+    entityId: cashout.id,
+    newData: { status: result.status, providerPayoutId: result.providerPayoutId },
+  });
+
+  return result;
 }

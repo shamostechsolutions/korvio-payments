@@ -470,6 +470,7 @@ model Cashout {
   platformFee   Int           @map("platform_fee")
   netAmount     Int           @map("net_amount")
   payoutPhone   String        @map("payout_phone")
+  payoutRecipientName String? @map("payout_recipient_name")
   payoutMethod  PaymentMethod @default(MTN_MOMO) @map("payout_method")
   status        CashoutStatus @default(PENDING)
   requestedAt   DateTime      @default(now()) @map("requested_at")

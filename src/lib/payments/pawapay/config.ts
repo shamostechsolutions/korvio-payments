@@ -45,8 +45,8 @@ export function pawapayCallbacksEnabled() {
   return process.env.PAWAPAY_CALLBACK_SIGNATURES === "true";
 }
 
-export function pawapayAutoPayoutEnabled() {
-  return process.env.PAWAPAY_AUTO_PAYOUT !== "false";
+export function isPawapayPayoutsEnabled() {
+  return process.env.PAYMENT_PROVIDER === "pawapay" && Boolean(process.env.PAWAPAY_API_TOKEN);
 }
 
 /** PawaPay expects whole-number amounts for UGX. */

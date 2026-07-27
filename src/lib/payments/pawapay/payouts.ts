@@ -8,7 +8,6 @@ import { pawapayRequest } from "./client";
 import {
   formatPawapayAmount,
   normalizeUgandaPhone,
-  pawapayAutoPayoutEnabled,
   pawapayDefaultCurrency,
   pawapayProviderForMethod,
 } from "./config";
@@ -28,11 +27,10 @@ type PawapayPayoutCallback = {
   failureReason?: { failureMessage?: string };
 };
 
-export async function initiatePawapayPayoutForCashout(cashoutId: string) {
-  if (!pawapayAutoPayoutEnabled()) {
-    return null;
-  }
-
+export async function initiatePawapayPayoutForCashout(
+  cashoutId: string,
+  adminUserId?: string,
+) {
   const cashout = await prisma.cashout.findUniqueOrThrow({
     where: { id: cashoutId },
     include: { campaign: { select: { currency: true, name: true } } },
@@ -89,6 +87,7 @@ export async function initiatePawapayPayoutForCashout(cashoutId: string) {
 
   await writeAuditLog({
     campaignId: cashout.campaignId,
+    userId: adminUserId,
     action: "pawapay_payout_initiated",
     entityType: "cashout",
     entityId: cashout.id,

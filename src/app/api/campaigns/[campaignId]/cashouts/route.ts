@@ -23,6 +23,7 @@ export async function GET(
 
 const postSchema = z.object({
   payoutPhone: z.string().min(10).max(20),
+  payoutRecipientName: z.string().min(2).max(80).optional(),
   payoutMethod: z.enum(["MTN_MOMO", "AIRTEL_MONEY"]).optional(),
   amount: z.number().int().positive().optional(),
 });
@@ -46,6 +47,7 @@ export async function POST(
       campaignId: access.campaign.id,
       userId: user.id,
       payoutPhone: body.payoutPhone,
+      payoutRecipientName: body.payoutRecipientName,
       payoutMethod: body.payoutMethod,
       amount: body.amount,
     });

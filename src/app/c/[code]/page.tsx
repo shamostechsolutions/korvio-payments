@@ -220,7 +220,7 @@ export default async function PublicCampaignPage({
                     <li key={w.id} className="flex items-center justify-between gap-3 py-3">
                       <div>
                         <p className="text-sm font-medium text-[var(--ink)]">
-                          Sent to organiser
+                          {w.payoutRecipientName || "Payout sent"}
                         </p>
                         <p className="text-xs text-[var(--ink-soft)]">
                           {format(w.processedAt ?? w.requestedAt, "MMM d, yyyy")}

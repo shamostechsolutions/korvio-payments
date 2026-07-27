@@ -1,12 +1,19 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requirePlatformAdmin } from "@/lib/auth/platform-admin";
-import { updateCashoutStatus } from "@/lib/admin/cashouts";
+import { approveCashoutViaPawapay, updateCashoutStatus } from "@/lib/admin/cashouts";
 
-const schema = z.object({
+const statusSchema = z.object({
+  action: z.literal("update_status").optional(),
   status: z.enum(["PENDING", "PROCESSING", "COMPLETED", "FAILED", "CANCELLED"]),
   notes: z.string().optional(),
 });
+
+const approveSchema = z.object({
+  action: z.literal("approve_payout"),
+});
+
+const schema = z.union([approveSchema, statusSchema]);
 
 export async function PATCH(
   request: Request,
@@ -16,6 +23,14 @@ export async function PATCH(
     const admin = await requirePlatformAdmin();
     const { cashoutId } = await params;
     const body = schema.parse(await request.json());
+
+    if (body.action === "approve_payout") {
+      const cashout = await approveCashoutViaPawapay({
+        cashoutId,
+        adminUserId: admin.id,
+      });
+      return NextResponse.json({ cashout });
+    }
 
     const cashout = await updateCashoutStatus({
       cashoutId,

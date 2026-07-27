@@ -44,6 +44,7 @@ export async function requestCampaignCashout(input: {
   campaignId: string;
   userId: string;
   payoutPhone: string;
+  payoutRecipientName?: string;
   payoutMethod?: PaymentMethod;
   amount?: number;
 }) {
@@ -89,6 +90,7 @@ export async function requestCampaignCashout(input: {
       platformFee,
       netAmount,
       payoutPhone: input.payoutPhone.trim(),
+      payoutRecipientName: input.payoutRecipientName?.trim() || null,
       payoutMethod: input.payoutMethod ?? "MTN_MOMO",
       status: "PENDING",
     },
@@ -105,13 +107,6 @@ export async function requestCampaignCashout(input: {
     newData: cashout,
   });
 
-  if (process.env.PAYMENT_PROVIDER === "pawapay") {
-    const { initiatePawapayPayoutForCashout } = await import(
-      "@/lib/payments/pawapay/payouts"
-    );
-    return initiatePawapayPayoutForCashout(cashout.id);
-  }
-
   return cashout;
 }
 
@@ -124,6 +119,7 @@ export async function getPublicCampaignCashouts(campaignId: string) {
       netAmount: true,
       amount: true,
       platformFee: true,
+      payoutRecipientName: true,
       processedAt: true,
       requestedAt: true,
     },
