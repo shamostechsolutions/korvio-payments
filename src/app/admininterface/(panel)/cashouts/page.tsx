@@ -2,11 +2,16 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { prisma } from "@/lib/db";
 import { CashoutActions } from "@/components/admin/cashout-actions";
+import {
+  canUseAutomatedCashoutPayouts,
+  canUseManualCashoutPayouts,
+  cashoutPayoutModeDescription,
+} from "@/lib/campaigns/cashout-payout-mode";
 import { formatMoney } from "@/lib/utils/money";
-import { isPawapayPayoutsEnabled } from "@/lib/payments/pawapay/config";
 
 export default async function AdminCashoutsPage() {
-  const pawapayEnabled = isPawapayPayoutsEnabled();
+  const automatedPayoutAvailable = canUseAutomatedCashoutPayouts();
+  const manualPayoutAvailable = canUseManualCashoutPayouts();
   const cashouts = await prisma.cashout.findMany({
     orderBy: { requestedAt: "desc" },
     include: {
@@ -22,10 +27,7 @@ export default async function AdminCashoutsPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-[var(--dash-ink)]">Cash-outs</h1>
         <p className="mt-1 text-sm text-[var(--dash-muted)]">
-          {pending.length} awaiting your approval ·{" "}
-          {pawapayEnabled
-            ? "Review each request, then approve to send via PawaPay."
-            : "Send MoMo manually, then mark paid."}
+          {pending.length} awaiting your approval · {cashoutPayoutModeDescription()}
         </p>
       </div>
 
@@ -108,7 +110,8 @@ export default async function AdminCashoutsPage() {
                     <CashoutActions
                       cashoutId={c.id}
                       status={c.status}
-                      pawapayEnabled={pawapayEnabled}
+                      automatedPayoutAvailable={automatedPayoutAvailable}
+                      manualPayoutAvailable={manualPayoutAvailable}
                       payoutPhone={c.payoutPhone}
                       payoutRecipientName={c.payoutRecipientName}
                       netAmount={formatMoney(c.netAmount, c.campaign.currency)}
@@ -191,7 +194,8 @@ export default async function AdminCashoutsPage() {
                 <CashoutActions
                   cashoutId={c.id}
                   status={c.status}
-                  pawapayEnabled={pawapayEnabled}
+                  automatedPayoutAvailable={automatedPayoutAvailable}
+                  manualPayoutAvailable={manualPayoutAvailable}
                   payoutPhone={c.payoutPhone}
                   payoutRecipientName={c.payoutRecipientName}
                   netAmount={formatMoney(c.netAmount, c.campaign.currency)}
