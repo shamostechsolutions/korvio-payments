@@ -1,23 +1,20 @@
 "use client";
 
-import { useState } from "react";
-import { Clock, Copy, ExternalLink } from "lucide-react";
+import { Clock, ExternalLink } from "lucide-react";
+import { CampaignShareActions } from "@/components/campaign/campaign-share-actions";
+import type { CampaignShareMessageInput } from "@/lib/campaigns/share-message";
 
-type Props = {
-  publicUrl: string;
+type Props = CampaignShareMessageInput & {
   campaignCode: string;
   isLive?: boolean;
 };
 
-export function ShareCampaignPanel({ publicUrl, campaignCode, isLive = true }: Props) {
-  const [copied, setCopied] = useState(false);
-
-  async function copyLink() {
-    await navigator.clipboard.writeText(publicUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }
-
+export function ShareCampaignPanel({
+  publicUrl,
+  campaignCode,
+  isLive = true,
+  ...shareInput
+}: Props) {
   if (!isLive) {
     return (
       <div className="dash-card p-5">
@@ -35,7 +32,7 @@ export function ShareCampaignPanel({ publicUrl, campaignCode, isLive = true }: P
               Reference code · {campaignCode}
             </p>
             <p className="mt-4 text-sm text-[var(--dash-muted)]">
-              Check back here — your share link will appear once Korvio approves the campaign.
+              Check back here — your share message will appear once Korvio approves the campaign.
             </p>
           </div>
         </div>
@@ -45,25 +42,26 @@ export function ShareCampaignPanel({ publicUrl, campaignCode, isLive = true }: P
 
   return (
     <div className="dash-card p-5">
-      <h2 className="text-base font-semibold text-[var(--dash-ink)]">Share campaign</h2>
-      <p className="mt-1 text-sm text-[var(--dash-muted)]">
-        Send this link to your group. Contributors join and pay on the web — no app needed.
-      </p>
-      <p className="mt-3 text-xs font-medium uppercase tracking-wide text-[var(--dash-muted)]">
-        Code · {campaignCode}
-      </p>
-      <p className="mt-1 break-all rounded-lg bg-[var(--dash-bg)] px-3 py-2 text-sm text-teal-400">
-        {publicUrl}
-      </p>
-      <div className="mt-4 flex flex-wrap gap-2">
-        <button type="button" onClick={() => void copyLink()} className="dash-btn-secondary">
-          <Copy className="h-4 w-4" />
-          {copied ? "Copied" : "Copy link"}
-        </button>
-        <a href={publicUrl} target="_blank" rel="noreferrer" className="dash-btn-primary">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="text-base font-semibold text-[var(--dash-ink)]">Share campaign</h2>
+          <p className="mt-1 text-sm text-[var(--dash-muted)]">
+            Copy the message below into your group chat, or share straight to WhatsApp.
+          </p>
+        </div>
+        <a href={publicUrl} target="_blank" rel="noreferrer" className="dash-btn-secondary shrink-0">
           <ExternalLink className="h-4 w-4" />
           Open page
         </a>
+      </div>
+
+      <div className="mt-4">
+        <CampaignShareActions
+          variant="dashboard"
+          campaignCode={campaignCode}
+          publicUrl={publicUrl}
+          {...shareInput}
+        />
       </div>
     </div>
   );

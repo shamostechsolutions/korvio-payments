@@ -311,6 +311,14 @@ export default async function CampaignOverviewPage({
           publicUrl={publicUrl}
           campaignCode={campaign.campaignCode}
           isLive={isLive}
+          name={campaign.name}
+          category={campaign.category}
+          beneficiaryName={campaign.beneficiaryName}
+          currency={campaign.currency}
+          targetAmount={campaign.targetAmount}
+          fundraisingMode={campaign.fundraisingMode}
+          totalReceived={campaign.totalReceived}
+          contributorCount={contributors.length}
         />
       </div>
 

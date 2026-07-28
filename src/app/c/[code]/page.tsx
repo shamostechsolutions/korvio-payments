@@ -141,9 +141,16 @@ export default async function PublicCampaignPage({
               </h1>
 
               <ShareButtons
-                campaignName={campaign.name}
                 campaignCode={campaign.campaignCode}
-                url={publicUrl}
+                publicUrl={publicUrl}
+                name={campaign.name}
+                category={campaign.category}
+                beneficiaryName={campaign.beneficiaryName}
+                currency={campaign.currency}
+                targetAmount={campaign.targetAmount}
+                fundraisingMode={campaign.fundraisingMode}
+                totalReceived={campaign.totalReceived}
+                contributorCount={contributors.length}
               />
 
               {campaign.isVerified ? (
@@ -343,9 +350,16 @@ export default async function PublicCampaignPage({
                 </p>
                 <div className="mt-4">
                   <ShareButtons
-                    campaignName={campaign.name}
                     campaignCode={campaign.campaignCode}
-                    url={publicUrl}
+                    publicUrl={publicUrl}
+                    name={campaign.name}
+                    category={campaign.category}
+                    beneficiaryName={campaign.beneficiaryName}
+                    currency={campaign.currency}
+                    targetAmount={campaign.targetAmount}
+                    fundraisingMode={campaign.fundraisingMode}
+                    totalReceived={campaign.totalReceived}
+                    contributorCount={contributors.length}
                   />
                 </div>
               </div>
