@@ -11,32 +11,67 @@ export class PawapayApiError extends Error {
   }
 }
 
-function readFailureMessage(body: unknown): string | null {
+export type PawapayFailure = {
+  failureCode?: string;
+  failureMessage?: string;
+  payoutId?: string;
+  status?: string;
+  httpStatus?: number;
+};
+
+export function parsePawapayFailure(
+  body: unknown,
+  httpStatus?: number,
+): PawapayFailure | null {
   if (!body || typeof body !== "object") return null;
 
   const record = body as Record<string, unknown>;
   const failureReason = record.failureReason;
-  if (failureReason && typeof failureReason === "object") {
-    const reason = failureReason as Record<string, unknown>;
-    const code = typeof reason.failureCode === "string" ? reason.failureCode : null;
-    const message = typeof reason.failureMessage === "string" ? reason.failureMessage : null;
-    if (code && message) return `${code}: ${message}`;
-    if (message) return message;
-    if (code) return code;
-  }
+  const reason =
+    failureReason && typeof failureReason === "object"
+      ? (failureReason as Record<string, unknown>)
+      : null;
 
-  if (typeof record.message === "string") return record.message;
-  if (typeof record.error === "string") return record.error;
+  const failureCode =
+    typeof reason?.failureCode === "string" ? reason.failureCode : undefined;
+  const failureMessage =
+    typeof reason?.failureMessage === "string"
+      ? reason.failureMessage
+      : typeof record.message === "string"
+        ? record.message
+        : typeof record.error === "string"
+          ? record.error
+          : undefined;
 
-  return null;
+  if (!failureCode && !failureMessage) return null;
+
+  return {
+    failureCode,
+    failureMessage,
+    payoutId: typeof record.payoutId === "string" ? record.payoutId : undefined,
+    status: typeof record.status === "string" ? record.status : undefined,
+    httpStatus,
+  };
 }
 
+/** User-facing text: PawaPay's own failureMessage only (fallback to failureCode). */
 export function formatPawapayError(error: PawapayApiError): string {
-  const detail = readFailureMessage(error.body);
-  if (detail) {
-    return `PawaPay rejected the request (${error.status}): ${detail}`;
-  }
+  const failure = parsePawapayFailure(error.body, error.status);
+  if (failure?.failureMessage) return failure.failureMessage;
+  if (failure?.failureCode) return failure.failureCode;
   return error.message;
+}
+
+export function logPawapayFailure(
+  context: string,
+  body: unknown,
+  httpStatus?: number,
+) {
+  console.error(`[pawapay/${context}]`, {
+    httpStatus,
+    response: body,
+    failure: parsePawapayFailure(body, httpStatus),
+  });
 }
 
 export async function pawapayRequest<T>(
@@ -55,6 +90,7 @@ export async function pawapayRequest<T>(
   const body = await response.json().catch(() => null);
 
   if (!response.ok) {
+    logPawapayFailure(path.replace(/^\//, ""), body, response.status);
     throw new PawapayApiError(
       `PawaPay API error (${response.status})`,
       response.status,

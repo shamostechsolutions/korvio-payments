@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requirePlatformAdmin } from "@/lib/auth/platform-admin";
 import { approveCashoutViaPawapay, updateCashoutStatus } from "@/lib/admin/cashouts";
 import { canUseAutomatedCashoutPayouts, canUseManualCashoutPayouts } from "@/lib/campaigns/cashout-payout-mode";
-import { PawapayApiError, formatPawapayError } from "@/lib/payments/pawapay/client";
+import { PawapayApiError, formatPawapayError, parsePawapayFailure } from "@/lib/payments/pawapay/client";
 
 const statusSchema = z.object({
   action: z.literal("update_status").optional(),
@@ -80,7 +80,14 @@ export async function PATCH(
       return NextResponse.json({ error: error.issues[0]?.message }, { status: 400 });
     }
     if (error instanceof PawapayApiError) {
-      return NextResponse.json({ error: formatPawapayError(error) }, { status: 400 });
+      const pawapay = parsePawapayFailure(error.body, error.status);
+      return NextResponse.json(
+        {
+          error: formatPawapayError(error),
+          pawapay,
+        },
+        { status: 400 },
+      );
     }
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 400 });

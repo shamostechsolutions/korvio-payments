@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/audit";
 import { publishCashoutLedgerEntry } from "@/lib/admin/cashouts";
 import { recalculateCampaignWallet } from "@/lib/campaigns/totals";
-import { pawapayRequest } from "./client";
+import { pawapayRequest, logPawapayFailure, parsePawapayFailure, PawapayApiError } from "./client";
 import {
   formatPawapayAmount,
   normalizeUgandaPhone,
@@ -75,16 +75,30 @@ export async function initiatePawapayPayoutForCashout(
   });
 
   if (response.status === "REJECTED") {
-    const failed = await prisma.cashout.update({
+    logPawapayFailure("payouts", response);
+    const pawapayMessage =
+      response.failureReason?.failureMessage || "PawaPay rejected payout";
+
+    await prisma.cashout.update({
       where: { id: cashout.id },
       data: {
         status: "FAILED",
         processedAt: new Date(),
-        notes: response.failureReason?.failureMessage || "PawaPay rejected payout",
+        notes: pawapayMessage,
       },
     });
     await recalculateCampaignWallet(cashout.campaignId);
-    return failed;
+
+    await writeAuditLog({
+      campaignId: cashout.campaignId,
+      userId: adminUserId,
+      action: "pawapay_payout_rejected",
+      entityType: "cashout",
+      entityId: cashout.id,
+      newData: parsePawapayFailure(response) ?? response,
+    });
+
+    throw new PawapayApiError("PawaPay payout rejected", 200, response);
   }
 
   const updated = await prisma.cashout.update({
