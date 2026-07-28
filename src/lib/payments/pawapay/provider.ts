@@ -14,6 +14,7 @@ import {
   pawapayDefaultCountry,
   pawapayDefaultCurrency,
   pawapayProviderForMethod,
+  sanitizePawapayCustomerMessage,
 } from "./config";
 import { mapPawapayCheckoutStatus, mapPawapayDepositStatus } from "./status";
 
@@ -147,7 +148,10 @@ export class PawapayPaymentProvider implements PaymentProvider {
           },
         },
         clientReferenceId: input.reference,
-        customerMessage: input.campaignName?.slice(0, 22) || "Korvio contribution",
+        customerMessage: sanitizePawapayCustomerMessage(
+          input.campaignName,
+          "Korvio contribution",
+        ),
       }),
     });
 

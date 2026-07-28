@@ -64,3 +64,18 @@ export function normalizeUgandaPhone(phone: string) {
   if (digits.length === 9) return `256${digits}`;
   return digits;
 }
+
+/** PawaPay customerMessage: 4–22 chars, letters, digits, and spaces only. */
+export function sanitizePawapayCustomerMessage(
+  value: string | null | undefined,
+  fallback = "Korvio payment",
+) {
+  const cleaned = (value ?? "")
+    .replace(/[^a-zA-Z0-9 ]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 22);
+
+  if (cleaned.length >= 4) return cleaned;
+  return fallback.slice(0, 22);
+}

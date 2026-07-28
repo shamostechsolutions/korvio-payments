@@ -10,6 +10,7 @@ import {
   normalizeUgandaPhone,
   pawapayDefaultCurrency,
   pawapayProviderForMethod,
+  sanitizePawapayCustomerMessage,
 } from "./config";
 import { mapPawapayPayoutStatus } from "./status";
 
@@ -36,14 +37,21 @@ export async function initiatePawapayPayoutForCashout(
     include: { campaign: { select: { currency: true, name: true } } },
   });
 
-  if (cashout.providerPayoutId) {
+  if (cashout.providerPayoutId && cashout.status !== "PENDING") {
     return cashout;
   }
 
-  const payoutId = randomUUID();
+  const payoutId = cashout.providerPayoutId ?? randomUUID();
   const phone = normalizeUgandaPhone(cashout.payoutPhone);
   const provider = pawapayProviderForMethod(cashout.payoutMethod as PaymentMethod);
   const currency = cashout.campaign.currency || pawapayDefaultCurrency();
+
+  if (!cashout.providerPayoutId) {
+    await prisma.cashout.update({
+      where: { id: cashout.id },
+      data: { providerPayoutId: payoutId },
+    });
+  }
 
   const response = await pawapayRequest<PawapayPayoutResponse>("/v2/payouts", {
     method: "POST",
@@ -59,7 +67,10 @@ export async function initiatePawapayPayoutForCashout(
         },
       },
       clientReferenceId: cashout.id,
-      customerMessage: cashout.campaign.name.slice(0, 22) || "Korvio cashout",
+      customerMessage: sanitizePawapayCustomerMessage(
+        cashout.campaign.name,
+        "Korvio cashout",
+      ),
     }),
   });
 
@@ -80,7 +91,7 @@ export async function initiatePawapayPayoutForCashout(
     where: { id: cashout.id },
     data: {
       status: "PROCESSING",
-      providerPayoutId: response.payoutId,
+      providerPayoutId: response.payoutId || payoutId,
       notes: "Payout submitted to PawaPay",
     },
   });
